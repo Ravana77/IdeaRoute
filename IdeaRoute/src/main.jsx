@@ -27,6 +27,11 @@ useEffect(() =>
   localStorage.getItem('is authenticated', isAuthenticated);
 }, [isAuthenticated]);
 
+
+<Route path = "/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} /> //when someone login its called onLogin() where isAuthenticated is set to true
+
+
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
