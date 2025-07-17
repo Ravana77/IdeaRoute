@@ -1,6 +1,6 @@
 import { StrictMode, useState, useEffect } from 'react';//  React core tools
 import { createRoot } from 'react-dom/client';// React DOM tool to connect React to HTML <div id="root">
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';// 🛣️ Tools from react-router-dom to handle page routing
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';//  Tools from react-router-dom to handle page routing
 import './index.css';
 import App from './App.jsx';
 import Layout from './Layout.jsx';
@@ -12,12 +12,11 @@ function RequireAuth({ children, isAuthenticated }) {
   const location = useLocation();  // 📍 Find out where the user tried to go
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;//  If user is not logged in, send them to login page &  Save the original location so they can go back after login
+    setIsAuthenticated(true) // delete this line and remove below comment ( for my refernce only dont do it )
+    // return <Navigate to="/login" state={{ from: location }} replace />;//  If user is not logged in, send them to login page &  Save the original location so they can go back after login
   }
   return children;// If logged in, show the page content
 }
-
-
 
 function RouterWrapper() {  //  The Router — Main App Controller
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -29,6 +28,7 @@ function RouterWrapper() {  //  The Router — Main App Controller
     localStorage.setItem('isAuthenticated', isAuthenticated);
   }, [isAuthenticated]);
 
+  
   return (
     <BrowserRouter> {/*  Wrap the app to enable routing */}
       <Routes> {/*  List of all routes in the app */}
@@ -57,8 +57,6 @@ function RouterWrapper() {  //  The Router — Main App Controller
     </BrowserRouter>
   );
 }
-
-
 
 createRoot(document.getElementById('root')).render( // Render the App to the Browser
   <StrictMode>
