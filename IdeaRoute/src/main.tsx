@@ -1,7 +1,6 @@
 import { StrictMode, useState, useEffect } from 'react';//  React core tools
 import { createRoot } from 'react-dom/client';// React DOM tool to connect React to HTML <div id="root">
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';//  Tools from react-router-dom to handle page routing
-import './index.css';
 import App from './App.jsx';
 import Layout from './Layout.jsx';
 import Login from './Login.jsx';
