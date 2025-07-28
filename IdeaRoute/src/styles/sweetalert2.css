@@ -1,0 +1,576 @@
+/* SweetAlert2 Dark Theme Styles for IdeaRoute */
+
+/* Default popup container - ensure dark background */
+.swal2-popup {
+  background: #1f1f1f !important;
+  color: #f8f8f8 !important;
+  border: 1px solid #374151 !important;
+}
+
+/* Base popup styling - Fixed dimensions and mobile-friendly */
+.swal2-popup {
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid #374151 !important;
+  background: #1f1f1f !important;
+  color: #f8f8f8 !important;
+  /* Fixed responsive dimensions */
+  width: 90% !important;
+  max-width: 400px !important;
+  min-width: 280px !important;
+  max-height: 70vh !important;
+  min-height: auto !important;
+  padding: 1.5rem !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+/* Title styling - compact and visible */
+.swal2-title {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  color: #f8f8f8 !important;
+  margin: 0 0 0.75rem 0 !important;
+  padding: 0 !important;
+  line-height: 1.3 !important;
+  text-align: center !important;
+  word-wrap: break-word !important;
+  display: block !important;
+}
+
+/* Content styling - scrollable and responsive */
+.swal2-content,
+.swal2-html-container {
+  font-size: 0.875rem !important;
+  color: #d1d5db !important;
+  line-height: 1.5 !important;
+  margin: 0 0 1rem 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+  word-wrap: break-word !important;
+  max-height: 30vh !important;
+  overflow-y: auto !important;
+  display: block !important;
+}
+
+/* Button actions container - prevent overflow */
+.swal2-actions {
+  margin: 1rem 0 0 0 !important;
+  padding: 0 !important;
+  gap: 0.75rem !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+}
+
+/* Button styling - mobile-friendly */
+.swal2-button {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 0.625rem 1.25rem !important;
+  border-radius: 6px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-width: 80px !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.swal2-responsive-button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.swal2-responsive-button:active {
+  transform: translateY(0) !important;
+}
+
+/* Confirm button */
+.swal2-confirm.swal2-responsive-button {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+.swal2-confirm.swal2-responsive-button:hover {
+  background: #2563eb !important;
+  color: white !important;
+}
+
+/* Cancel button */
+.swal2-cancel.swal2-responsive-button {
+  background: #374151 !important;
+  color: #d1d5db !important;
+  margin-right: 0.5rem !important;
+}
+
+.swal2-cancel.swal2-responsive-button:hover {
+  background: #4b5563 !important;
+  color: #f8f8f8 !important;
+}
+
+/* Icon styling */
+.swal2-success-icon {
+  border-color: #10b981 !important;
+  color: #10b981 !important;
+}
+
+.swal2-error-icon {
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+
+.swal2-warning-icon {
+  border-color: #f59e0b !important;
+  color: #f59e0b !important;
+}
+
+.swal2-info-icon {
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+}
+
+.swal2-question-icon {
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+}
+
+
+/* Icon animations */
+.swal2-icon {
+  margin: 0 auto 1.5rem auto !important;
+  width: 80px !important;
+  height: 80px !important;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+  border-color: #48bb78 !important;
+}
+
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: #48bb78 !important;
+}
+
+/* Progress bar */
+.swal2-timer-progress-bar {
+  background: #3b82f6 !important;
+  height: 4px !important;
+}
+
+/* Loading spinner */
+.swal2-loading-popup {
+  background: #1f1f1f !important;
+  border: 1px solid #374151 !important;
+}
+
+.swal2-loading-popup .swal2-loader {
+  border-color: #3b82f6 transparent #3b82f6 transparent !important;
+  border-width: 4px !important;
+  width: 40px !important;
+  height: 40px !important;
+  margin-bottom: 1rem !important;
+}
+
+.swal2-loading-popup .swal2-title {
+  color: #f8f8f8 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.swal2-loading-popup .swal2-html-container {
+  color: #d1d5db !important;
+  font-size: 0.9rem !important;
+}
+
+/* Input fields for prompts */
+.swal2-input {
+  background: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: #f8f8f8 !important;
+  border-radius: 8px !important;
+  padding: 0.75rem !important;
+}
+
+.swal2-input:focus {
+  border-color: #3b82f6 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+.swal2-input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Toast notifications */
+.swal2-toast {
+  background: #1f1f1f !important;
+  color: #f8f8f8 !important;
+  border: 1px solid #374151 !important;
+}
+
+.swal2-toast .swal2-title {
+  color: #f8f8f8 !important;
+}
+
+.swal2-toast .swal2-content {
+  color: #d1d5db !important;
+}
+
+/* Close button */
+.swal2-close {
+  color: #a0aec0 !important;
+  font-size: 2rem !important;
+  font-weight: 300 !important;
+  transition: all 0.2s ease !important;
+}
+
+.swal2-close:hover {
+  color: #f8f8f8 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+}
+
+/* Backdrop */
+.swal2-backdrop-show {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .swal2-responsive-popup {
+    width: 95% !important;
+    padding: 1.5rem !important;
+    margin: 1rem !important;
+  }
+
+  .swal2-responsive-title {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .swal2-responsive-content {
+    font-size: 0.875rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .swal2-responsive-button {
+    font-size: 0.875rem !important;
+    padding: 0.625rem 1.25rem !important;
+    min-width: 80px !important;
+  }
+
+  .swal2-icon {
+    width: 60px !important;
+    height: 60px !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Stack buttons on mobile */
+  .swal2-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .swal2-responsive-button {
+    width: 100% !important;
+    margin: 0.25rem 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .swal2-responsive-popup {
+    width: 98% !important;
+    padding: 1.25rem !important;
+    margin: 0.5rem !important;
+  }
+
+  .swal2-responsive-title {
+    font-size: 1.125rem !important;
+  }
+
+  .swal2-responsive-content {
+    font-size: 0.8125rem !important;
+  }
+
+  .swal2-icon {
+    width: 50px !important;
+    height: 50px !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .swal2-responsive-popup {
+    background: #2d3748 !important;
+    border-color: #4a5568 !important;
+  }
+
+  .swal2-responsive-title {
+    color: #f7fafc !important;
+  }
+
+  .swal2-responsive-content {
+    color: #e2e8f0 !important;
+  }
+
+  .swal2-cancel.swal2-responsive-button {
+    background: #4a5568 !important;
+    color: #e2e8f0 !important;
+  }
+
+  .swal2-cancel.swal2-responsive-button:hover {
+    background: #2d3748 !important;
+    color: #f7fafc !important;
+  }
+
+  .swal2-close {
+    color: #a0aec0 !important;
+  }
+
+  .swal2-close:hover {
+    color: #e2e8f0 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+/* Accessibility improvements */
+.swal2-responsive-popup:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+}
+
+.swal2-responsive-button:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+}
+
+/* Animation improvements */
+.swal2-show {
+  animation: swal2-responsive-show 0.3s ease-out !important;
+}
+
+.swal2-hide {
+  animation: swal2-responsive-hide 0.2s ease-in !important;
+}
+
+@keyframes swal2-responsive-show {
+  0% {
+    transform: scale(0.7) translateY(-50px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes swal2-responsive-hide {
+  0% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.7) translateY(-50px);
+    opacity: 0;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .swal2-responsive-popup {
+    border: 2px solid #000000 !important;
+  }
+
+  .swal2-responsive-button {
+    border: 2px solid #000000 !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .swal2-responsive-popup,
+  .swal2-responsive-button,
+  .swal2-icon,
+  .swal2-timer-progress-bar {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .swal2-show,
+  .swal2-hide {
+    animation: none !important;
+  }
+}
+
+/* Global SweetAlert2 overrides for dark theme */
+.swal2-container {
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Ensure all text elements have proper contrast */
+.swal2-popup * {
+  color: inherit !important;
+}
+
+.swal2-popup {
+  background: #1f1f1f !important;
+  color: #f8f8f8 !important;
+}
+
+/* Fix all text elements that might have contrast issues */
+.swal2-popup .swal2-title,
+.swal2-popup .swal2-content,
+.swal2-popup .swal2-html-container,
+.swal2-popup p,
+.swal2-popup span,
+.swal2-popup div,
+.swal2-popup label {
+  color: #f8f8f8 !important;
+}
+
+/* Validation messages and form text */
+.swal2-validation-message {
+  background: #374151 !important;
+  color: #f8f8f8 !important;
+  border: 1px solid #4b5563 !important;
+}
+
+/* Form elements styling */
+.swal2-input-label {
+  color: #f8f8f8 !important;
+}
+
+/* HTML content in SweetAlert */
+.swal2-html-container {
+  color: #f8f8f8 !important;
+}
+
+.swal2-html-container * {
+  color: #f8f8f8 !important;
+}
+
+/* Additional text elements */
+.swal2-popup .swal2-close {
+  color: #9ca3af !important;
+}
+
+.swal2-popup .swal2-close:hover {
+  color: #f8f8f8 !important;
+}
+
+/* Loading text */
+.swal2-popup .swal2-loading {
+  color: #f8f8f8 !important;
+}
+
+/* Custom classes for better contrast */
+.swal2-dark-theme {
+  background: #1f1f1f !important;
+  color: #f8f8f8 !important;
+}
+
+.swal2-dark-theme * {
+  color: #f8f8f8 !important;
+}
+
+/* Additional button styling for better contrast */
+.swal2-styled {
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.5rem !important;
+  margin: 0.25rem !important;
+}
+
+.swal2-styled.swal2-confirm {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+.swal2-styled.swal2-confirm:hover {
+  background: #2563eb !important;
+  color: white !important;
+}
+
+.swal2-styled.swal2-cancel {
+  background: #374151 !important;
+  color: #d1d5db !important;
+}
+
+.swal2-styled.swal2-cancel:hover {
+  background: #4b5563 !important;
+  color: #f8f8f8 !important;
+}
+
+.swal2-styled.swal2-deny {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.swal2-styled.swal2-deny:hover {
+  background: #dc2626 !important;
+  color: white !important;
+}
+
+/* Footer text */
+.swal2-footer {
+  color: #9ca3af !important;
+  background: transparent !important;
+  border-top: 1px solid #374151 !important;
+  font-size: 0.8rem !important;
+  margin-top: 1rem !important;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 640px) {
+  .swal2-popup {
+    width: 95% !important;
+    max-width: 320px !important;
+    min-width: 280px !important;
+    max-height: 75vh !important;
+    padding: 1.25rem !important;
+  }
+  
+  .swal2-title {
+    font-size: 1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .swal2-content,
+  .swal2-html-container {
+    font-size: 0.8rem !important;
+    max-height: 25vh !important;
+  }
+  
+  .swal2-button {
+    font-size: 0.8rem !important;
+    padding: 0.5rem 1rem !important;
+    min-width: 70px !important;
+  }
+  
+  .swal2-actions {
+    gap: 0.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .swal2-popup {
+    width: 96% !important;
+    max-width: 280px !important;
+    max-height: 80vh !important;
+    padding: 1rem !important;
+  }
+  
+  .swal2-actions {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .swal2-button {
+    width: 100% !important;
+    min-width: auto !important;
+  }
+}

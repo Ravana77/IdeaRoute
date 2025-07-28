@@ -1,0 +1,136 @@
+/* Error Boundary Styles - Dark Theme */
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--background-color);
+}
+
+.errorCard {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-large);
+}
+
+.iconContainer {
+  margin-bottom: 1.5rem;
+}
+
+.icon {
+  font-size: 4rem;
+  display: block;
+  color: #ef4444;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+.message {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0 0 2rem 0;
+  line-height: 1.5;
+}
+
+.details {
+  margin: 1.5rem 0;
+  text-align: left;
+  background: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.summary {
+  padding: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.summary:hover {
+  background: var(--hover-color);
+}
+
+.errorText {
+  padding: 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.retryButton,
+.homeButton {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.retryButton {
+  background: var(--accent-color);
+  color: white;
+}
+
+.retryButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+.homeButton {
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.homeButton:hover {
+  background: var(--hover-color);
+  color: var(--text-primary);
+}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+  .errorCard {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .retryButton,
+  .homeButton {
+    width: 100%;
+  }
+}

@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Idea Route - Modern Productivity Dashboard
 
-## Getting Started
+A modern, production-ready Next.js application featuring a comprehensive dashboard with integrated productivity tools. Built with React 19, Next.js 15, TypeScript, and Firebase.
 
-First, run the development server:
+## Core Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **📝 Smart Checklist** - Create, manage, and track your daily tasks with local storage persistence
+- **🤖 AI Content Generator** - Generate ideas, content, strategies, and solutions using AI assistance
+- **⏰ Time Planner** - Organize your schedule with categorized time blocks and progress tracking
+- **🔐 Complete Authentication** - Email/password + Google OAuth with Firebase
+- **🎨 Modern UI/UX** - Dark theme, mobile-first responsive design with smooth animations
+- **🛡️ Security First** - Password encryption, input sanitization, protected routes
+
+## Documentation
+
+📖 **[Complete Documentation](./DOCUMENTATION.md)** - Comprehensive guide covering:
+- Firebase setup and configuration
+- Google OAuth implementation
+- Environment variables
+- Firestore security rules
+- Authentication system
+- Deployment instructions
+- API reference
+
+🏗️ **[Project Structure](./PROJECT_STRUCTURE.md)** - Detailed guide covering:
+- Component organization and folder structure
+- Import strategies and conventions
+- UI component system
+- Constants management
+- Development guidelines
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Authentication**: Firebase Auth
+- **Database**: Firestore
+- **Styling**: CSS Modules with Dark Theme
+- **Notifications**: SweetAlert2
+- **Architecture**: Component-based with centralized state management
+
+## Project Structure
+
+```
+src/
+├── components/           # Organized in feature-based folders
+│   ├── Checklist/       # Smart task management
+│   ├── AIGenerate/      # AI content generation
+│   ├── TimePlanner/     # Schedule management
+│   ├── ui/              # Reusable UI components
+│   └── shared/          # Shared utilities
+├── constants/           # Application constants
+├── context/             # React contexts
+├── hooks/               # Custom React hooks
+└── utils/               # Utility functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local` with your Firebase and Google OAuth credentials:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
+```
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License
