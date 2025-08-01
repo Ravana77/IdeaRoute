@@ -1,164 +1,121 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { STORAGE_KEYS } from '@/constants';
 import styles from './Checklist.module.css';
 
-interface ChecklistItem {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: Date;
+// Define the structure of each QA checklist item
+interface QAItem {
+  id: string;         // unique ID for the item
+  category: string;   // group/category like "Functional"
+  label: string;      // the text shown for the checklist item
+  completed: boolean; // whether the item is marked complete
+  note?: string;      // optional notes for this item
 }
 
+// Props to receive from parent (like the onClose function)
 interface ChecklistProps {
   onClose: () => void;
 }
 
 const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
-  const [items, setItems] = useState<ChecklistItem[]>([]);
-  const [newItemText, setNewItemText] = useState('');
+  const [items, setItems] = useState<QAItem[]>([]);
+  const [newNote, setNewNote] = useState<{ [key: string]: string }>({});
 
-  // Load items from localStorage on component mount
+  // Load saved checklist from localStorage on mount
   useEffect(() => {
-    const savedItems = localStorage.getItem(STORAGE_KEYS.CHECKLIST_ITEMS);
-    if (savedItems) {
+    const saved = localStorage.getItem('qa-checklist');
+    if (saved) {
       try {
-        const parsed = JSON.parse(savedItems);
-        setItems(parsed.map((item: any) => ({
-          ...item,
-          createdAt: new Date(item.createdAt)
-        })));
-      } catch (error) {
-        console.error('Error loading checklist items:', error);
+        setItems(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error loading checklist:', e);
       }
     }
   }, []);
 
-  // Save items to localStorage whenever items change
+  // Save checklist to localStorage when it updates
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CHECKLIST_ITEMS, JSON.stringify(items));
+    localStorage.setItem('qa-checklist', JSON.stringify(items));
   }, [items]);
 
-  const addItem = () => {
-    if (newItemText.trim()) {
-      const newItem: ChecklistItem = {
-        id: Date.now().toString(),
-        text: newItemText.trim(),
-        completed: false,
-        createdAt: new Date()
-      };
-      setItems(prev => [...prev, newItem]);
-      setNewItemText('');
-    }
-  };
-
-  const toggleItem = (id: string) => {
-    setItems(prev => 
-      prev.map(item => 
+  // Toggle whether a checkbox is completed
+  const toggle = (id: string) => {
+    setItems(prev =>
+      prev.map(item =>
         item.id === id ? { ...item, completed: !item.completed } : item
       )
     );
   };
 
-  const deleteItem = (id: string) => {
-    setItems(prev => prev.filter(item => item.id !== id));
+  // Update the text inside the notes field
+  const updateNote = (id: string, value: string) => {
+    setNewNote({ ...newNote, [id]: value }); // update temporary state
+    setItems(prev =>
+      prev.map(item => item.id === id ? { ...item, note: value } : item)
+    );
   };
 
-  const clearCompleted = () => {
-    setItems(prev => prev.filter(item => !item.completed));
-  };
+  // These are your predefined QA items (we'll group them by category)
+  const defaultItems: QAItem[] = [
+    { id: 'f1', category: 'Functional', label: 'Form inputs validate correctly', completed: false },
+    { id: 'f2', category: 'Functional', label: 'Buttons trigger expected actions', completed: false },
+    { id: 'ui1', category: 'UI / UX', label: 'Layout is consistent across screens', completed: false },
+    { id: 'ui2', category: 'UI / UX', label: 'Hover/focus effects work correctly', completed: false },
+    { id: 'access1', category: 'Accessibility', label: 'Keyboard navigation supported', completed: false },
+    { id: 'access2', category: 'Accessibility', label: 'Alt text present for images', completed: false },
+    { id: 'perf1', category: 'Performance', label: 'Popup loads within 1 second', completed: false },
+    { id: 'perf2', category: 'Performance', label: 'Typing has no visible lag', completed: false },
+  ];
 
-  const completedCount = items.filter(item => item.completed).length;
-  const totalCount = items.length;
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      addItem();
+  // If no items are loaded yet, load the default ones
+  useEffect(() => {
+    if (items.length === 0) {
+      setItems(defaultItems);
     }
-  };
+  }, [items]);
+
+  // Group checklist items by category (to render by section)
+  const grouped = items.reduce((acc: Record<string, QAItem[]>, item) => {
+    if (!acc[item.category]) acc[item.category] = [];
+    acc[item.category].push(item);
+    return acc;
+  }, {});
 
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            <span className={styles.icon}>✓</span>
-            My Checklist
+            <span className={styles.icon}>🛠️</span> QA Checklist
           </h2>
-          <button onClick={onClose} className={styles.closeButton}>
-            ✕
-          </button>
+          <button onClick={onClose} className={styles.closeButton}>✕</button>
         </div>
 
         <div className={styles.content}>
-          <div className={styles.stats}>
-            <div className={styles.stat}>
-              <span className={styles.statNumber}>{completedCount}</span>
-              <span className={styles.statLabel}>Completed</span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statNumber}>{totalCount - completedCount}</span>
-              <span className={styles.statLabel}>Remaining</span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statNumber}>{totalCount}</span>
-              <span className={styles.statLabel}>Total</span>
-            </div>
-          </div>
-
-          <div className={styles.addSection}>
-            <input
-              type="text"
-              value={newItemText}
-              onChange={(e) => setNewItemText(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Add a new task..."
-              className={styles.input}
-            />
-            <button onClick={addItem} className={styles.addButton}>
-              Add
-            </button>
-          </div>
-
-          <div className={styles.itemsList}>
-            {items.length === 0 ? (
-              <div className={styles.emptyState}>
-                <div className={styles.emptyIcon}>📝</div>
-                <p className={styles.emptyText}>No tasks yet. Add your first task above!</p>
-              </div>
-            ) : (
-              items.map(item => (
-                <div 
-                  key={item.id} 
-                  className={`${styles.item} ${item.completed ? styles.completed : ''}`}
-                >
-                  <button
-                    onClick={() => toggleItem(item.id)}
-                    className={styles.checkbox}
-                  >
+          {Object.entries(grouped).map(([category, items]) => (
+            <div key={category} className={styles.section}>
+              <h3 className={styles.category}>{category}</h3>
+              {items.map(item => (
+                <div key={item.id} className={`${styles.item} ${item.completed ? styles.completed : ''}`}>
+                  {/* Checkbox toggle */}
+                  <button onClick={() => toggle(item.id)} className={styles.checkbox}>
                     {item.completed && <span className={styles.checkmark}>✓</span>}
                   </button>
-                  <span className={styles.itemText}>{item.text}</span>
-                  <button
-                    onClick={() => deleteItem(item.id)}
-                    className={styles.deleteButton}
-                    title="Delete task"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
 
-          {completedCount > 0 && (
-            <div className={styles.actions}>
-              <button onClick={clearCompleted} className={styles.clearButton}>
-                Clear Completed ({completedCount})
-              </button>
+                  {/* Task label */}
+                  <span className={styles.itemText}>{item.label}</span>
+
+                  {/* Notes input */}
+                  <textarea
+                    placeholder="Optional note..."
+                    className={styles.noteBox}
+                    value={item.note || ''}
+                    onChange={(e) => updateNote(item.id, e.target.value)}
+                  />
+                </div>
+              ))}
             </div>
-          )}
+          ))}
         </div>
       </div>
     </div>
