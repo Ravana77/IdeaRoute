@@ -3,119 +3,415 @@
 import React, { useState, useEffect } from 'react';
 import styles from './Checklist.module.css';
 
-// Define the structure of each QA checklist item
-interface QAItem {
-  id: string;         // unique ID for the item
-  category: string;   // group/category like "Functional"
-  label: string;      // the text shown for the checklist item
-  completed: boolean; // whether the item is marked complete
-  note?: string;      // optional notes for this item
+type StatusType = 'Pass' | 'Fail' | 'N/A';
+
+interface ChecklistItem {
+  id: string;
+  section: string;
+  text: string;
+  completed: boolean;
+  status: StatusType;
+  comment: string;
+  createdAt: Date;
 }
 
-// Props to receive from parent (like the onClose function)
 interface ChecklistProps {
   onClose: () => void;
 }
 
-const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
-  const [items, setItems] = useState<QAItem[]>([]);
-  const [newNote, setNewNote] = useState<{ [key: string]: string }>({});
+const defaultSections = [
+  'Functional Behavior',
+  'UI / Accessibility',
+  'Performance',
+  'Security / Data Handling',
+  'Compatibility'
+];
 
-  // Load saved checklist from localStorage on mount
+const defaultItems = [
+  {
+    id: '1',
+    section: 'Functional Behavior',
+    text: 'Buttons work as expected (click handlers fire)',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '2',
+    section: 'Functional Behavior',
+    text: 'Validation errors appear for invalid inputs',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '3',
+    section: 'Functional Behavior',
+    text: 'Submit flows complete successfully',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '4',
+    section: 'UI / Accessibility',
+    text: 'Visual consistency across components',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '5',
+    section: 'UI / Accessibility',
+    text: 'Focus indicators visible for keyboard navigation',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '6',
+    section: 'UI / Accessibility',
+    text: 'Alt texts present for images',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '7',
+    section: 'UI / Accessibility',
+    text: 'Color contrast meets WCAG standards',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '8',
+    section: 'Performance',
+    text: 'Page load time under 2 seconds',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '9',
+    section: 'Performance',
+    text: 'Responsive on all viewport sizes',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '10',
+    section: 'Security / Data Handling',
+    text: 'Input sanitization prevents XSS',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '11',
+    section: 'Security / Data Handling',
+    text: 'Form data not persisted to localStorage unnecessarily',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '12',
+    section: 'Compatibility',
+    text: 'Tested on latest Chrome, Firefox, Safari',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  },
+  {
+    id: '13',
+    section: 'Compatibility',
+    text: 'Mobile responsive (320px - 1920px)',
+    completed: false,
+    status: 'N/A',
+    comment: '',
+    createdAt: new Date()
+  }
+];
+
+const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
+  const [items, setItems] = useState<ChecklistItem[]>(defaultItems);
+  const [newItemText, setNewItemText] = useState('');
+  const [newItemSection, setNewItemSection] = useState(defaultSections[0]);
+  const [notes, setNotes] = useState('');
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+  // Load items from localStorage on component mount
   useEffect(() => {
-    const saved = localStorage.getItem('qa-checklist');
-    if (saved) {
+    const savedItems = localStorage.getItem('qa-checklist-items');
+    const savedNotes = localStorage.getItem('qa-checklist-notes');
+    if (savedItems) {
       try {
-        setItems(JSON.parse(saved));
-      } catch (e) {
-        console.error('Error loading checklist:', e);
+        const parsed = JSON.parse(savedItems);
+        setItems(parsed.map((item: any) => ({
+          ...item,
+          createdAt: new Date(item.createdAt)
+        })));
+      } catch (error) {
+        console.error('Error loading checklist items:', error);
       }
+    }
+    if (savedNotes) {
+      setNotes(savedNotes);
     }
   }, []);
 
-  // Save checklist to localStorage when it updates
+  // Save items to localStorage whenever items change
   useEffect(() => {
-    localStorage.setItem('qa-checklist', JSON.stringify(items));
-  }, [items]);
+    localStorage.setItem('qa-checklist-items', JSON.stringify(items));
+    localStorage.setItem('qa-checklist-notes', notes);
+  }, [items, notes]);
 
-  // Toggle whether a checkbox is completed
-  const toggle = (id: string) => {
-    setItems(prev =>
-      prev.map(item =>
+  const addItem = () => {
+    if (newItemText.trim()) {
+      const newItem: ChecklistItem = {
+        id: Date.now().toString(),
+        section: newItemSection,
+        text: newItemText.trim(),
+        completed: false,
+        status: 'N/A',
+        comment: '',
+        createdAt: new Date()
+      };
+      setItems(prev => [...prev, newItem]);
+      setNewItemText('');
+    }
+  };
+
+  const toggleItem = (id: string) => {
+    setItems(prev => 
+      prev.map(item => 
         item.id === id ? { ...item, completed: !item.completed } : item
       )
     );
   };
 
-  // Update the text inside the notes field
-  const updateNote = (id: string, value: string) => {
-    setNewNote({ ...newNote, [id]: value }); // update temporary state
-    setItems(prev =>
-      prev.map(item => item.id === id ? { ...item, note: value } : item)
+  const deleteItem = (id: string) => {
+    setItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const updateItemStatus = (id: string, status: 'Pass' | 'Fail' | 'N/A') => {
+    setItems(prev => 
+      prev.map(item => 
+        item.id === id ? { ...item, status } : item
+      )
     );
   };
 
-  // These are your predefined QA items (we'll group them by category)
-  const defaultItems: QAItem[] = [
-    { id: 'f1', category: 'Functional', label: 'Form inputs validate correctly', completed: false },
-    { id: 'f2', category: 'Functional', label: 'Buttons trigger expected actions', completed: false },
-    { id: 'ui1', category: 'UI / UX', label: 'Layout is consistent across screens', completed: false },
-    { id: 'ui2', category: 'UI / UX', label: 'Hover/focus effects work correctly', completed: false },
-    { id: 'access1', category: 'Accessibility', label: 'Keyboard navigation supported', completed: false },
-    { id: 'access2', category: 'Accessibility', label: 'Alt text present for images', completed: false },
-    { id: 'perf1', category: 'Performance', label: 'Popup loads within 1 second', completed: false },
-    { id: 'perf2', category: 'Performance', label: 'Typing has no visible lag', completed: false },
-  ];
+  const updateItemComment = (id: string, comment: string) => {
+    setItems(prev => 
+      prev.map(item => 
+        item.id === id ? { ...item, comment } : item
+      )
+    );
+  };
 
-  // If no items are loaded yet, load the default ones
-  useEffect(() => {
-    if (items.length === 0) {
-      setItems(defaultItems);
+  const clearCompleted = () => {
+    setItems(prev => prev.filter(item => !item.completed));
+  };
+
+  const toggleSection = (section: string) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const completedCount = items.filter(item => item.completed).length;
+  const totalCount = items.length;
+  const passCount = items.filter(item => item.status === 'Pass').length;
+  const failCount = items.filter(item => item.status === 'Fail').length;
+  const passRate = totalCount > 0 ? Math.round((passCount / totalCount) * 100) : 0;
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      addItem();
     }
-  }, [items]);
+  };
 
-  // Group checklist items by category (to render by section)
-  const grouped = items.reduce((acc: Record<string, QAItem[]>, item) => {
-    if (!acc[item.category]) acc[item.category] = [];
-    acc[item.category].push(item);
+  const exportToCSV = () => {
+    const headers = ['Section', 'Item', 'Status', 'Completed', 'Comment'];
+    const csvRows = [
+      headers.join(','),
+      ...items.map(item => [
+        `"${item.section.replace(/"/g, '""')}"`,
+        `"${item.text.replace(/"/g, '""')}"`,
+        item.status,
+        item.completed ? 'Yes' : 'No',
+        `"${item.comment.replace(/"/g, '""')}"`
+      ].join(','))
+    ];
+    
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'qa-checklist-report.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const groupedItems = items.reduce((acc, item) => {
+    if (!acc[item.section]) {
+      acc[item.section] = [];
+    }
+    acc[item.section].push(item);
     return acc;
-  }, {});
+  }, {} as Record<string, ChecklistItem[]>);
 
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            <span className={styles.icon}>🛠️</span> QA Checklist
+            <span className={styles.icon}>✓</span>
+            QA Checklist
           </h2>
-          <button onClick={onClose} className={styles.closeButton}>✕</button>
+          <button onClick={onClose} className={styles.closeButton}>
+            ✕
+          </button>
         </div>
 
         <div className={styles.content}>
-          {Object.entries(grouped).map(([category, items]) => (
-            <div key={category} className={styles.section}>
-              <h3 className={styles.category}>{category}</h3>
-              {items.map(item => (
-                <div key={item.id} className={`${styles.item} ${item.completed ? styles.completed : ''}`}>
-                  {/* Checkbox toggle */}
-                  <button onClick={() => toggle(item.id)} className={styles.checkbox}>
-                    {item.completed && <span className={styles.checkmark}>✓</span>}
-                  </button>
-
-                  {/* Task label */}
-                  <span className={styles.itemText}>{item.label}</span>
-
-                  {/* Notes input */}
-                  <textarea
-                    placeholder="Optional note..."
-                    className={styles.noteBox}
-                    value={item.note || ''}
-                    onChange={(e) => updateNote(item.id, e.target.value)}
-                  />
-                </div>
-              ))}
+          <div className={styles.stats}>
+            <div className={styles.stat}>
+              <span className={styles.statNumber}>{completedCount}/{totalCount}</span>
+              <span className={styles.statLabel}>Completed</span>
             </div>
-          ))}
+            <div className={styles.stat}>
+              <span className={styles.statNumber}>{passRate}%</span>
+              <span className={styles.statLabel}>Pass Rate</span>
+            </div>
+            <div className={styles.stat}>
+              <span className={styles.statNumber}>{failCount}</span>
+              <span className={styles.statLabel}>Failures</span>
+            </div>
+          </div>
+
+          <div className={styles.addSection}>
+            <select
+              value={newItemSection}
+              onChange={(e) => setNewItemSection(e.target.value)}
+              className={styles.sectionSelect}
+            >
+              {defaultSections.map(section => (
+                <option key={section} value={section}>{section}</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              value={newItemText}
+              onChange={(e) => setNewItemText(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Add a new test case..."
+              className={styles.input}
+            />
+            <button onClick={addItem} className={styles.addButton}>
+              Add
+            </button>
+          </div>
+
+          <div className={styles.itemsContainer}>
+            {Object.entries(groupedItems).map(([section, sectionItems]) => (
+              <div key={section} className={styles.section}>
+                <div 
+                  className={styles.sectionHeader}
+                  onClick={() => toggleSection(section)}
+                >
+                  <h3>{section}</h3>
+                  <span className={styles.collapseIcon}>
+                    {collapsedSections[section] ? '▼' : '▲'}
+                  </span>
+                </div>
+                {!collapsedSections[section] && (
+                  <div className={styles.itemsList}>
+                    {sectionItems.map(item => (
+                      <div 
+                        key={item.id} 
+                        className={`${styles.item} ${item.completed ? styles.completed : ''}`}
+                      >
+                        <div className={styles.itemMain}>
+                          <button
+                            onClick={() => toggleItem(item.id)}
+                            className={styles.checkbox}
+                          >
+                            {item.completed && <span className={styles.checkmark}>✓</span>}
+                          </button>
+                          <span className={styles.itemText}>{item.text}</span>
+                          <select
+                            value={item.status}
+                            onChange={(e) => updateItemStatus(item.id, e.target.value as 'Pass' | 'Fail' | 'N/A')}
+                            className={`${styles.statusSelect} ${styles[`status-${item.status.toLowerCase()}`]}`}
+                          >
+                            <option value="N/A">N/A</option>
+                            <option value="Pass">Pass</option>
+                            <option value="Fail">Fail</option>
+                          </select>
+                          <button
+                            onClick={() => deleteItem(item.id)}
+                            className={styles.deleteButton}
+                            title="Delete test case"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                        <div className={styles.commentSection}>
+                          <textarea
+                            value={item.comment}
+                            onChange={(e) => updateItemComment(item.id, e.target.value)}
+                            placeholder="Add comments..."
+                            className={styles.commentInput}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.notesSection}>
+            <h3>Notes & Next Steps</h3>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add general observations, suggestions, or next steps..."
+              className={styles.notesInput}
+            />
+          </div>
+
+          <div className={styles.actions}>
+            <button onClick={exportToCSV} className={styles.exportButton}>
+              Export to CSV
+            </button>
+            {completedCount > 0 && (
+              <button onClick={clearCompleted} className={styles.clearButton}>
+                Clear Completed
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
