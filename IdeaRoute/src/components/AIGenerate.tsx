@@ -156,7 +156,7 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
 const ExampleFormat=`
 Project Name: X,
 Project Description: (Generate Brief of project concept based on Project Title).
-Suggested Platforms & Wesbites: (List of platforms and websites that helped in this project).
+Suggested Techstacks & Learning platforms: (List of Techstacks & Learning platforms that helped in this project).
 `;
 
 // Call Gemini function that brings ProjectName & HelpedPlatforms
