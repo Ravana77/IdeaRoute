@@ -124,6 +124,89 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
+
+  // Call Gemini function that brings ProjectName & HelpedPlatforms from pressing CallGemini Button, calls Gemini API inside this function with a set of rules.
+  // so the api call is a different function, this one simply prompts that call
+  const geminiAPICall = async (content: string) => {
+  try {
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to call Gemini API');
+    }
+
+    const data = await response.json();
+    console.log('Gemini API response:', data);
+    // You can now use data.generatedText to update your component state
+    return data.generatedText;
+  } catch (error) {
+    console.error('Error calling Gemini API:', error);
+    // Handle the error as needed
+    return { error: 'Failed to call Gemini API' };
+  }
+};
+
+// ... (rest of the component code)
+const ExampleFormat=`
+Project Name: X,
+Project Description: (Generate Brief of project concept based on Project Title).
+Suggested Platforms & Wesbites: (List of platforms and websites that helped in this project).
+`;
+
+// Call Gemini function that brings ProjectName & HelpedPlatforms
+// from pressing CallGemini Button, calls Gemini API inside this function
+// with a set of rules.
+const promptGemini = async (content: string) => {
+  setIsGenerating(true);
+  if (!content) {
+    console.error('Content is required to call Gemini API');
+    setIsGenerating(false);
+    return;
+  }
+  // prompt: Rules for Gemini API call
+  // This prompt is designed to guide Gemini in generating a project idea based on the provided content
+  const prompt = `
+  You are an AI assistant that, excells in Genearting project ideas based on user input.
+  You will be provided with a project name and a list of platforms and websites that was predicted as correct choice for user.
+  Your task is to describe the given project name and platform in detail.
+  INPUT:  ${content}.
+  EXAMPLE FORMAT:  ${ExampleFormat}.
+   RULES=[
+  1. Provide a clear and concise project name.
+  2. List the platforms and websites that were instrumental in the project.
+  3. Strictly follow the provided Example format.
+  4. Do not include any additional information outside the Example format.
+  ].  
+  OUTPUT: Adhere to RULES & given Content, and provide output in style of Example Format.
+  `;
+
+  try {
+    const geminiResponse = await geminiAPICall(prompt);
+
+    if (typeof geminiResponse === 'string') {
+      // Create a new content item with the Gemini response
+      const newContent = {
+        id: Date.now().toString(),
+        type: 'gemini',
+        prompt: 'Gemini-generated content:',
+        content: geminiResponse,
+        createdAt: new Date(),
+      };
+      setGeneratedContent([newContent, ...generatedContent]);
+    } else {
+      // Handle the error case
+      console.error('Gemini API call returned an error:', geminiResponse.error);
+    }
+  } finally {
+    setIsGenerating(false);
+  }
+};
   
   // Delete content function remains the same
   const deleteContent = (id: string) => {
@@ -159,7 +242,7 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
                       className={styles.promptInput}
                       disabled={isGenerating}
                     >
-                      <option value="" disabled>Select your skill level</option>
+                      {/* <option value="" disabled>Select your skill level</option> */}
                       <option value="Beginner">Beginner</option>
                       <option value="Intermediate">Intermediate</option>
                       <option value="Advanced">Advanced</option>
@@ -167,7 +250,7 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
                   ) : (
                     <input
                       type="text"
-                      value={answers[questions[currentStep]] || ''}
+                      value={answers[questions[currentStep]] || (currentStep === 0 ? 'Blacksmithing' : currentStep === 1 ? 'Industrial IoT Developer' : currentStep === 2 ? 'Manufactoring, AR' : 'Unity, Arduino, Python')}
                       onChange={handleInputChange}
                       className={styles.promptInput}
                       placeholder={`Enter your ${questions[currentStep].toLowerCase()}...`}
@@ -232,6 +315,13 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
                         </React.Fragment>
                       ))}
                     </div>
+                    <button
+                      onClick={() => promptGemini(item.content)}
+                      className={styles.copyButton}
+                      title="Call Gemini"
+                    >
+                      Call Gemini
+                    </button>
                   </div>
                 ))}
               </div>
