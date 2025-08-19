@@ -155,7 +155,9 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
 // ... (rest of the component code)
 const ExampleFormat=`
 Project Name: X,
+
 Project Description: (Generate Brief of project concept based on Project Title).
+
 Suggested Techstacks & Learning platforms: (List of Techstacks & Learning platforms that helped in this project).
 `;
 
@@ -179,7 +181,7 @@ const promptGemini = async (content: string) => {
   EXAMPLE FORMAT:  ${ExampleFormat}.
    RULES=[
   1. Provide a clear and concise project name.
-  2. List the platforms and websites that were instrumental in the project.
+  2. List the platforms and websites that would help doing the project (ex- W3School , Github ,etc).
   3. Strictly follow the provided Example format.
   4. Do not include any additional information outside the Example format.
   ].  
@@ -320,7 +322,7 @@ const promptGemini = async (content: string) => {
                       className={styles.copyButton}
                       title="Call Gemini"
                     >
-                      Call Gemini
+                      describe
                     </button>
                   </div>
                 ))}
