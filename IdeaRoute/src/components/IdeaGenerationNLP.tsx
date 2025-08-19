@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import styles from './IdeaGenerationNLP.module.css';
 
-interface TimeBlock {
+// Interface for each idea block
+interface IdeaBlock {
   id: string;
   title: string;
   startTime: string;
@@ -14,12 +15,14 @@ interface TimeBlock {
   createdAt: Date;
 }
 
-interface TimePlannerProps {
+// Props interface
+interface IdeaGenerationNLPProps {
   onClose: () => void;
 }
 
-const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
-  const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
+// Main component
+const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
+  const [ideaBlocks, setIdeaBlocks] = useState<IdeaBlock[]>([]);
   const [isAddingBlock, setIsAddingBlock] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [newBlock, setNewBlock] = useState({
@@ -30,6 +33,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     description: ''
   });
 
+  // Categories (kept same for now)
   const categories = [
     { value: 'work', label: 'Work', color: '#3b82f6', icon: '💼' },
     { value: 'personal', label: 'Personal', color: '#10b981', icon: '👤' },
@@ -39,31 +43,32 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     { value: 'break', label: 'Break', color: '#6b7280', icon: '☕' }
   ];
 
-  // Load blocks from localStorage
+  // Load idea blocks from localStorage
   useEffect(() => {
-    const savedBlocks = localStorage.getItem('time-planner-blocks');
+    const savedBlocks = localStorage.getItem('idea-generation-nlp-blocks');
     if (savedBlocks) {
       try {
         const parsed = JSON.parse(savedBlocks);
-        setTimeBlocks(parsed.map((block: any) => ({
+        setIdeaBlocks(parsed.map((block: any) => ({
           ...block,
           createdAt: new Date(block.createdAt)
         })));
       } catch (error) {
-        console.error('Error loading time blocks:', error);
+        console.error('Error loading idea blocks:', error);
       }
     }
   }, []);
 
-  // Save blocks to localStorage
+  // Save idea blocks to localStorage
   useEffect(() => {
-    localStorage.setItem('time-planner-blocks', JSON.stringify(timeBlocks));
-  }, [timeBlocks]);
+    localStorage.setItem('idea-generation-nlp-blocks', JSON.stringify(ideaBlocks));
+  }, [ideaBlocks]);
 
-  const addTimeBlock = () => {
+  // Add new block
+  const addIdeaBlock = () => {
     if (!newBlock.title.trim() || !newBlock.startTime || !newBlock.endTime) return;
 
-    const block: TimeBlock = {
+    const block: IdeaBlock = {
       id: Date.now().toString(),
       title: newBlock.title.trim(),
       startTime: newBlock.startTime,
@@ -74,7 +79,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
       createdAt: new Date()
     };
 
-    setTimeBlocks(prev => [...prev, block].sort((a, b) => 
+    setIdeaBlocks(prev => [...prev, block].sort((a, b) =>
       a.startTime.localeCompare(b.startTime)
     ));
 
@@ -88,36 +93,42 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     setIsAddingBlock(false);
   };
 
+  // Toggle completion
   const toggleBlockCompletion = (id: string) => {
-    setTimeBlocks(prev => 
-      prev.map(block => 
+    setIdeaBlocks(prev =>
+      prev.map(block =>
         block.id === id ? { ...block, completed: !block.completed } : block
       )
     );
   };
 
+  // Delete block
   const deleteBlock = (id: string) => {
-    setTimeBlocks(prev => prev.filter(block => block.id !== id));
+    setIdeaBlocks(prev => prev.filter(block => block.id !== id));
   };
 
-  const getCurrentTimeBlocks = () => {
-    return timeBlocks.filter(block => {
+  // Filter by selected date
+  const getCurrentIdeaBlocks = () => {
+    return ideaBlocks.filter(block => {
       const blockDate = new Date(block.createdAt).toISOString().split('T')[0];
       return blockDate === selectedDate;
     });
   };
 
+  // Format time (HH:MM AM/PM)
   const formatTime = (time: string) => {
     const date = new Date(`2000-01-01T${time}`);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Get category info
   const getCategoryInfo = (categoryValue: string) => {
     return categories.find(cat => cat.value === categoryValue) || categories[0];
   };
 
-  const getTimeProgress = () => {
-    const currentBlocks = getCurrentTimeBlocks();
+  // Calculate progress
+  const getProgress = () => {
+    const currentBlocks = getCurrentIdeaBlocks();
     const completedCount = currentBlocks.filter(block => block.completed).length;
     return {
       completed: completedCount,
@@ -126,16 +137,16 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     };
   };
 
-  const progress = getTimeProgress();
-  const currentBlocks = getCurrentTimeBlocks();
+  const progress = getProgress();
+  const currentBlocks = getCurrentIdeaBlocks();
 
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            <span className={styles.icon}>⏰</span>
-            Time Planner
+            <span className={styles.icon}>💡</span>
+            Idea Generation (NLP)
           </h2>
           <button onClick={onClose} className={styles.closeButton}>
             ✕
@@ -143,6 +154,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
         </div>
 
         <div className={styles.content}>
+          {/* Controls */}
           <div className={styles.controls}>
             <div className={styles.dateSection}>
               <label htmlFor="date-selector" className={styles.label}>
@@ -177,10 +189,11 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
               className={styles.addButton}
             >
               <span>+</span>
-              Add Time Block
+              Add Idea Block
             </button>
           </div>
 
+          {/* Add Form */}
           {isAddingBlock && (
             <div className={styles.addForm}>
               <div className={styles.formRow}>
@@ -190,7 +203,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
                     type="text"
                     value={newBlock.title}
                     onChange={(e) => setNewBlock(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="e.g., Team Meeting"
+                    placeholder="e.g., AI Project Idea"
                     className={styles.input}
                   />
                 </div>
@@ -250,7 +263,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
                   Cancel
                 </button>
                 <button
-                  onClick={addTimeBlock}
+                  onClick={addIdeaBlock}
                   className={styles.saveButton}
                   disabled={!newBlock.title.trim() || !newBlock.startTime || !newBlock.endTime}
                 >
@@ -260,16 +273,17 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
             </div>
           )}
 
+          {/* Blocks List */}
           <div className={styles.blocksSection}>
             <h3 className={styles.sectionTitle}>
-              Schedule for {new Date(selectedDate).toLocaleDateString()}
+              Ideas for {new Date(selectedDate).toLocaleDateString()}
             </h3>
 
             {currentBlocks.length === 0 ? (
               <div className={styles.emptyState}>
                 <div className={styles.emptyIcon}>📅</div>
                 <p className={styles.emptyText}>
-                  No time blocks scheduled for this date. Add your first block above!
+                  No ideas scheduled for this date. Add your first one above!
                 </p>
               </div>
             ) : (
@@ -277,9 +291,9 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
                 {currentBlocks.map(block => {
                   const categoryInfo = getCategoryInfo(block.category);
                   return (
-                    <div 
-                      key={block.id} 
-                      className={`${styles.timeBlock} ${block.completed ? styles.completed : ''}`}
+                    <div
+                      key={block.id}
+                      className={`${styles.ideaBlock} ${block.completed ? styles.completed : ''}`}
                       style={{ '--category-color': categoryInfo.color } as React.CSSProperties}
                     >
                       <div className={styles.blockTime}>
@@ -291,7 +305,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
                           <span className={styles.categoryName}>{categoryInfo.label}</span>
                         </div>
                       </div>
-                      
+
                       <div className={styles.blockContent}>
                         <div className={styles.blockHeader}>
                           <h4 className={styles.blockTitle}>{block.title}</h4>
@@ -312,7 +326,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
                             </button>
                           </div>
                         </div>
-                        
+
                         {block.description && (
                           <p className={styles.blockDescription}>{block.description}</p>
                         )}
@@ -329,4 +343,5 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
   );
 };
 
-export default TimePlanner;
+// Export
+export default IdeaGenerationNLP;
