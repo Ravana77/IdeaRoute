@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
 import styles from './Dashboard.module.css';
-import { Checklist, AIGenerate, TimePlanner } from '@/components';
+import { AIGenerate, TimePlanner, Checklist } from '@/components';
 
 const DashboardPage: React.FC = () => {
   const { user, loading, signOut } = useAuth();
@@ -263,10 +263,10 @@ const DashboardPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Modals */}
       {activeModal === 'checklist' && (
         <Checklist onClose={() => setActiveModal(null)} />
       )}
+      
       {activeModal === 'ai-generate' && (
         <AIGenerate onClose={() => setActiveModal(null)} />
       )}

@@ -1,5 +1,4 @@
 /* Checklist Modal Styles */
-
 .overlay {
   position: fixed;
   top: 0;
@@ -21,8 +20,8 @@
   box-shadow: var(--shadow-large);
   border: 1px solid var(--border-color);
   width: 100%;
-  max-width: 600px;
-  max-height: 80vh;
+  max-width: 800px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -118,6 +117,17 @@
   gap: 0.75rem;
 }
 
+.sectionSelect {
+  padding: 0.75rem 0.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
 .input {
   flex: 1;
   padding: 0.75rem 1rem;
@@ -140,7 +150,7 @@
 }
 
 .addButton {
-  padding: 0.75rem 1.5rem;
+  padding: 0 1.5rem;
   background: var(--accent-color);
   color: white;
   border: none;
@@ -161,18 +171,56 @@
   transform: translateY(0);
 }
 
-.itemsList {
+.itemsContainer {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+}
+
+.section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  padding: 1rem 1.5rem;
+  background: var(--bg-tertiary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sectionHeader:hover {
+  background: var(--bg-quaternary);
+}
+
+.sectionHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.collapseIcon {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  min-height: 200px;
+  padding: 0.5rem;
 }
 
 .item {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 0.75rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -186,12 +234,18 @@
 }
 
 .item.completed {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .item.completed .itemText {
   text-decoration: line-through;
   color: var(--text-muted);
+}
+
+.itemMain {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .checkbox {
@@ -230,6 +284,32 @@
   line-height: 1.4;
 }
 
+.statusSelect {
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.status-na {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-pass {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-fail {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
 .deleteButton {
   background: none;
   border: none;
@@ -247,28 +327,72 @@
   transform: scale(1.1);
 }
 
-.emptyState {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--text-muted);
+.commentSection {
+  padding-left: 2.25rem;
 }
 
-.emptyIcon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  opacity: 0.6;
+.commentInput {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  min-height: 2.5rem;
+  resize: vertical;
 }
 
-.emptyText {
-  color: var(--text-secondary);
-  font-size: 1rem;
+.commentInput:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.notesSection {
+  margin-top: 1rem;
+}
+
+.notesSection h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.notesInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  min-height: 100px;
+  resize: vertical;
+  font-size: 0.95rem;
+}
+
+.notesInput:focus {
+  outline: none;
+  border-color: var(--accent-color);
 }
 
 .actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
   border-top: 1px solid var(--border-color);
   padding-top: 1rem;
-  display: flex;
-  justify-content: center;
+}
+
+.exportButton {
+  padding: 0.5rem 1.5rem;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.exportButton:hover {
+  background: #4338ca;
+  transform: translateY(-1px);
 }
 
 .clearButton {
@@ -288,8 +412,25 @@
   border-color: #ef4444;
 }
 
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.emptyText {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
 /* Mobile responsive */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .modal {
     margin: 0.5rem;
     max-height: 90vh;
@@ -301,6 +442,7 @@
   
   .content {
     padding: 1rem;
+    gap: 1rem;
   }
   
   .title {
@@ -321,7 +463,25 @@
     gap: 0.5rem;
   }
   
-  .addButton {
+  .sectionSelect, .input, .addButton {
     width: 100%;
+  }
+  
+  .itemMain {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .itemText {
+    flex-basis: 100%;
+    order: 1;
+  }
+  
+  .commentSection {
+    padding-left: 0;
+  }
+  
+  .actions {
+    flex-direction: column;
   }
 }
