@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
 import styles from './Dashboard.module.css';
-import { AIGenerate, TimePlanner, Checklist } from '@/components';
+import { AIGenerate, TimePlanner, Checklist, IdeaGenerationNLP } from '@/components';
 
 const DashboardPage: React.FC = () => {
   const { user, loading, signOut } = useAuth();
@@ -227,7 +227,11 @@ const DashboardPage: React.FC = () => {
         <div className={styles.actionSection}>
           <h3 className={styles.sectionTitle}>Quick Actions</h3>
           <div className={styles.actionGrid}>
-            <button className={styles.actionCard}>
+
+
+            <button className={styles.actionCard}
+            onClick={() => setActiveModal('IdeaGenerationNLP')}
+            >
               <div className={styles.actionIcon}>➕</div>
               <div className={styles.actionContent}>
                 <h4 className={styles.actionTitle}>Create Suggestion</h4>
@@ -272,6 +276,9 @@ const DashboardPage: React.FC = () => {
       )}
       {activeModal === 'time-planner' && (
         <TimePlanner onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'IdeaGenerationNLP' && (
+         <IdeaGenerationNLP onClose={() => setActiveModal(null)} />
       )}
     </div>
   );
