@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './AIGenerate.module.css';
 import projectsData from '../components/Json Dataset/IdeaRoute dataset  Original.json';
+import { useIdea } from '@/context/IdeaContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface AIGenerateProps {
   onClose: () => void;
@@ -31,6 +33,11 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
+  const { ideas, addIdea } = useIdea();
+  const { user } = useAuth();
+  useEffect(() => {
+    console.log('Updated ideas in context:', ideas);
+  }, [ideas]);
 
   // Function to handle input changes for each question
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -40,6 +47,8 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
       [questions[currentStep]]: value
     }));
   };
+
+
 
   // Function to move to the next question
   const handleNext = () => {
@@ -58,7 +67,7 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
 
     for (const project of projectsData) {
       let score = 0;
-      
+
       // Calculate a score based on field matches
       if (project['Skill level'] && userAnswers['Skill level'] && project['Skill level'].toLowerCase().includes(userAnswers['Skill level'].toLowerCase())) {
         score += 2; // Weight skill level highly
@@ -94,7 +103,7 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
     if (matchedProject) {
       const projectIdea = matchedProject['Undergraduate project'];
       const helpedPlatforms = matchedProject['Helped platforms and  websites'];
-      
+
       const newContent = {
         id: Date.now().toString(),
         type: 'project',
@@ -102,7 +111,7 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
         content: `Project: ${projectIdea}\nPlatforms & Websites: ${helpedPlatforms}`,
         createdAt: new Date(),
       };
-      
+
       setGeneratedContent([newContent, ...generatedContent]);
     } else {
       // Handle the case where no match is found
@@ -115,7 +124,7 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
       };
       setGeneratedContent([noMatchContent, ...generatedContent]);
     }
-    
+
     setIsGenerating(false);
     setIsCompleted(true); // Mark questionnaire as complete
   };
@@ -128,88 +137,133 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
   // Call Gemini function that brings ProjectName & HelpedPlatforms from pressing CallGemini Button, calls Gemini API inside this function with a set of rules.
   // so the api call is a different function, this one simply prompts that call
   const geminiAPICall = async (content: string) => {
-  try {
-    const response = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content }),
-    });
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to call Gemini API');
+      if (!response.ok) {
+        throw new Error('Failed to call Gemini API');
+      }
+
+      const data = await response.json();
+      console.log('Gemini API response:', data);
+      // You can now use data.generatedText to update your component state
+      return data.generatedText;
+    } catch (error) {
+      console.error('Error calling Gemini API:', error);
+      // Handle the error as needed
+      return { error: 'Failed to call Gemini API' };
     }
+  };
 
-    const data = await response.json();
-    console.log('Gemini API response:', data);
-    // You can now use data.generatedText to update your component state
-    return data.generatedText;
-  } catch (error) {
-    console.error('Error calling Gemini API:', error);
-    // Handle the error as needed
-    return { error: 'Failed to call Gemini API' };
-  }
-};
-
-// ... (rest of the component code)
-const ExampleFormat=`
-Project Name: X,
-
-Project Description: (Generate Brief of project concept based on Project Title).
-
-Suggested Techstacks & Learning platforms: (List of Techstacks & Learning platforms that helped in this project).
-`;
-
-// Call Gemini function that brings ProjectName & HelpedPlatforms
-// from pressing CallGemini Button, calls Gemini API inside this function
-// with a set of rules.
-const promptGemini = async (content: string) => {
-  setIsGenerating(true);
-  if (!content) {
-    console.error('Content is required to call Gemini API');
-    setIsGenerating(false);
-    return;
-  }
-  // prompt: Rules for Gemini API call
-  // This prompt is designed to guide Gemini in generating a project idea based on the provided content
-  const prompt = `
-  You are an AI assistant that, excells in Genearting project ideas based on user input.
-  You will be provided with a project name and a list of platforms and websites that was predicted as correct choice for user.
-  Your task is to describe the given project name and platform in detail.
-  INPUT:  ${content}.
-  EXAMPLE FORMAT:  ${ExampleFormat}.
-   RULES=[
-  1. Provide a clear and concise project name.
-  2. List the platforms and websites that would help doing the project (ex- W3School , Github ,etc).
-  3. Strictly follow the provided Example format.
-  4. Do not include any additional information outside the Example format.
-  ].  
-  OUTPUT: Adhere to RULES & given Content, and provide output in style of Example Format.
-  `;
-
-  try {
-    const geminiResponse = await geminiAPICall(prompt);
-
-    if (typeof geminiResponse === 'string') {
-      // Create a new content item with the Gemini response
-      const newContent = {
-        id: Date.now().toString(),
-        type: 'gemini',
-        prompt: 'Gemini-generated content:',
-        content: geminiResponse,
-        createdAt: new Date(),
-      };
-      setGeneratedContent([newContent, ...generatedContent]);
-    } else {
-      // Handle the error case
-      console.error('Gemini API call returned an error:', geminiResponse.error);
+  // Call Gemini function that brings ProjectName & HelpedPlatforms
+  // from pressing CallGemini Button, calls Gemini API inside this function
+  // with a set of rules.
+  const promptGemini = async (content: string) => {
+    setIsGenerating(true);
+    if (!content) {
+      console.error('Content is required to call Gemini API');
+      setIsGenerating(false);
+      return;
     }
-  } finally {
-    setIsGenerating(false);
-  }
-};
-  
+    // prompt: Rules for Gemini API call
+    // This prompt is designed to guide Gemini in generating a project idea based on the provided content
+
+    const ExampleFormat = `
+      {
+        "projectName": "string",
+        "description": "string",
+        "platforms": ["string"],
+        "timePlanner": {
+          "sprint1": "string",
+          "sprint2": "string",
+          "sprint3": "string"
+      }
+    `;
+    const prompt = `
+      You are an AI assistant that generate a JSON object describing a project idea based on user input, including a project name, description, 
+      suggested platforms, and a basic sprint task list with sprint tasks.
+      INPUT: ${content}.
+      EXAMPLE FORMAT: ${ExampleFormat}.
+      RULES:
+      1. Output must be a valid JSON object matching the EXAMPLE FORMAT exactly.
+      2. projectName: A clear, concise project name (e.g., "AI Vehicle Trading Platform").
+      3. description: A brief project concept in 1–2 sentences, suitable for undergraduates.
+      4. platforms: An array of 3–5 relevant platforms or websites (e.g., "GitHub", "W3Schools", "React").
+      5. timePlanner: An object with up to 7 key sprint tasks, each a short string describing a simple task (e.g., "Design UI", "Set up database").
+      6. sprint tasks should be ordered by dependency priority, with the most critical tasks first.
+      7. Use only simple, beginner-friendly platforms and tasks suitable for undergraduates.
+      8. Do not include fields like waterfall, agile, or any other fields outside the EXAMPLE FORMAT.
+      9. For description and sprint fields, use clear, concise language (no more than 20 words per field).
+      10. Do not overcomplicate the project idea or tasks—keep it achievable for undergraduates.
+      11. Output only the JSON object, with no additional commentary or markdown.
+      OUTPUT: Generate a JSON object adhering to the EXAMPLE FORMAT and RULES based on the provided input.
+        `;
+
+
+    try {
+      const geminiResponse = await geminiAPICall(prompt);
+
+      if (typeof geminiResponse === 'string') {
+        let parsed;
+        try {
+          // Remove ```json or ``` at start/end
+          const cleaned = geminiResponse
+            .trim()
+            .replace(/^```json\s*/, '')
+            .replace(/^```\s*/, '')
+            .replace(/```$/, '');
+
+          parsed = JSON.parse(cleaned);
+        } catch (err) {
+          console.error("Invalid JSON from Gemini:", geminiResponse);
+          return;
+        }
+
+        const newContent = {
+          id: Date.now().toString(),
+          type: 'gemini',
+          prompt: 'Gemini-generated content:',
+          content: parsed.projectName + `\n` + parsed.description + `\nPlatforms: ${parsed.platforms.join(', ')}`,
+          parsedContent: parsed,   // store parsed object separately for saving
+          createdAt: new Date(),
+        };
+
+        setGeneratedContent([newContent, ...generatedContent]);
+
+        // Construct idea object from parsed fields
+        const idea = {
+          id: Date.now().toString(),
+          idea_name: parsed.projectName,
+          description: parsed.description,
+          platform: parsed.platforms.join(', '),
+          status: 'finalized',
+          user_id: user?.uid || 'anonymous',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          tasks: parsed.timePlanner,
+          waterfall: [],
+          agile: [],
+        };
+
+
+        addIdea(idea);
+
+        console.log('Idea added successfully:', idea);
+
+      } else {
+        console.error('Gemini API call returned an error:', geminiResponse.error);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Delete content function remains the same
   const deleteContent = (id: string) => {
     setGeneratedContent(generatedContent.filter(item => item.id !== id));
@@ -271,14 +325,14 @@ const promptGemini = async (content: string) => {
                 </div>
               </>
             )}
-            
+
             {isGenerating && (
               <div className={styles.loadingSpinner}>
                 <div className={styles.spinner}></div>
                 <p>Generating project ideas...</p>
               </div>
             )}
-            
+
             {generatedContent.length > 0 && (
               <div className={styles.contentList}>
                 {generatedContent.map((item) => (
