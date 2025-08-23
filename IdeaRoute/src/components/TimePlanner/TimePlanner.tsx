@@ -1,696 +1,287 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { STORAGE_KEYS, TIME_BLOCK_CATEGORIES, SDLC_PHASES } from '@/constants';
+import { useIdea } from '@/context/IdeaContext';
+import { useAuth } from '@/context/AuthContext';
 import styles from './TimePlanner.module.css';
-import { saveAs } from 'file-saver';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-
-interface TimeBlock {
-  id: string;
-  title: string;
-  startTime: string;
-  endTime: string;
-  category: string;
-  description?: string;
-  completed: boolean;
-  createdAt: Date;
-}
-
-interface ProjectPlan {
-  id: string;
-  name: string;
-  durationWeeks: number;
-  startDate: string;
-  phases: {
-    name: string;
-    weeks: number;
-    tasks: string[];
-  }[];
-  createdAt: Date;
-}
 
 interface TimePlannerProps {
   onClose: () => void;
 }
 
+interface Phase {
+  name: string;
+  tasks: string[];
+}
+
 const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
-  const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
-  const [projectPlans, setProjectPlans] = useState<ProjectPlan[]>([]);
-  const [activeTab, setActiveTab] = useState<'daily' | 'project'>('daily');
-  const [isAddingBlock, setIsAddingBlock] = useState(false);
-  const [isAddingProject, setIsAddingProject] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [newBlock, setNewBlock] = useState({
-    title: '',
-    startTime: '',
-    endTime: '',
-    category: 'work',
-    description: ''
-  });
-  const [newProject, setNewProject] = useState({
-    name: '',
-    durationWeeks: 4,
-    startDate: new Date().toISOString().split('T')[0]
-  });
+  const { ideas } = useIdea();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'waterfall' | 'agile' | null>(null);
+  const [phases, setPhases] = useState<Phase[]>([]);
+  const [timeValue, setTimeValue] = useState<number | ''>('');
+  const [timeUnit, setTimeUnit] = useState<'days' | 'weeks' | 'months'>('weeks');
 
-  const categories = TIME_BLOCK_CATEGORIES;
 
-  // Load data from localStorage
   useEffect(() => {
-    const savedBlocks = localStorage.getItem(STORAGE_KEYS.TIME_PLANNER_BLOCKS);
-    const savedProjects = localStorage.getItem(STORAGE_KEYS.TIME_PLANNER_PROJECTS);
-    
-    if (savedBlocks) {
-      try {
-        const parsed = JSON.parse(savedBlocks);
-        setTimeBlocks(parsed.map((block: any) => ({
-          ...block,
-          createdAt: new Date(block.createdAt)
-        })));
-      } catch (error) {
-        console.error('Error loading time blocks:', error);
-      }
-    }
-    
-    if (savedProjects) {
-      try {
-        const parsed = JSON.parse(savedProjects);
-        setProjectPlans(parsed.map((project: any) => ({
-          ...project,
-          createdAt: new Date(project.createdAt),
-          phases: project.phases || []
-        })));
-      } catch (error) {
-        console.error('Error loading project plans:', error);
-      }
-    }
-  }, []);
+    if (!user) throw new Error('User not authenticated');
+    if (!ideas || ideas.length === 0) console.warn('No ideas loaded');
+  }, [ideas, user]);
 
-  // Save data to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TIME_PLANNER_BLOCKS, JSON.stringify(timeBlocks));
-    localStorage.setItem(STORAGE_KEYS.TIME_PLANNER_PROJECTS, JSON.stringify(projectPlans));
-  }, [timeBlocks, projectPlans]);
-
-  // Time Block Functions
-  const addTimeBlock = () => {
-    if (!newBlock.title.trim() || !newBlock.startTime || !newBlock.endTime) return;
-
-    const block: TimeBlock = {
-      id: Date.now().toString(),
-      title: newBlock.title.trim(),
-      startTime: newBlock.startTime,
-      endTime: newBlock.endTime,
-      category: newBlock.category,
-      description: newBlock.description.trim(),
-      completed: false,
-      createdAt: new Date()
-    };
-
-    setTimeBlocks(prev => [...prev, block].sort((a, b) => 
-      a.startTime.localeCompare(b.startTime)
-    ));
-
-    resetNewBlockForm();
-    setIsAddingBlock(false);
-  };
-
-  const resetNewBlockForm = () => {
-    setNewBlock({
-      title: '',
-      startTime: '',
-      endTime: '',
-      category: 'work',
-      description: ''
-    });
-  };
-
-  const toggleBlockCompletion = (id: string) => {
-    setTimeBlocks(prev => 
-      prev.map(block => 
-        block.id === id ? { ...block, completed: !block.completed } : block
-      )
-    );
-  };
-
-  const deleteBlock = (id: string) => {
-    setTimeBlocks(prev => prev.filter(block => block.id !== id));
-  };
-
-  // Project Plan Functions
-  const generateSDLCPlan = (durationWeeks: number) => {
-    const totalPhases = SDLC_PHASES.length;
-    const baseWeeks = Math.floor(durationWeeks / totalPhases);
-    let remainingWeeks = durationWeeks % totalPhases;
-    
-    return SDLC_PHASES.map((phase, index) => {
-      // Give more weeks to implementation and testing phases
-      let weeks = baseWeeks;
-      if (phase.name === 'Implementation' || phase.name === 'Testing') {
-        weeks += 1;
-        remainingWeeks -= 1;
-      }
-      
-      // Distribute any remaining weeks
-      if (remainingWeeks > 0 && index === SDLC_PHASES.length - 1) {
-        weeks += remainingWeeks;
-      }
-      
-      return {
-        name: phase.name,
-        weeks: Math.max(1, weeks), // Ensure at least 1 week per phase
-        tasks: phase.tasks
-      };
-    });
-  };
-
-  const addProjectPlan = () => {
-    if (!newProject.name.trim() || newProject.durationWeeks < 1) return;
-
-    const phases = generateSDLCPlan(newProject.durationWeeks);
-    
-    const project: ProjectPlan = {
-      id: Date.now().toString(),
-      name: newProject.name.trim(),
-      durationWeeks: newProject.durationWeeks,
-      startDate: newProject.startDate,
-      phases,
-      createdAt: new Date()
-    };
-
-    setProjectPlans(prev => [...prev, project]);
-    resetNewProjectForm();
-    setIsAddingProject(false);
-  };
-
-  const resetNewProjectForm = () => {
-    setNewProject({
-      name: '',
-      durationWeeks: 4,
-      startDate: new Date().toISOString().split('T')[0]
-    });
-  };
-
-  const deleteProject = (id: string) => {
-    setProjectPlans(prev => prev.filter(project => project.id !== id));
-  };
-
-  // Utility Functions
-  const getCurrentTimeBlocks = () => {
-    return timeBlocks.filter(block => {
-      const blockDate = new Date(block.createdAt).toISOString().split('T')[0];
-      return blockDate === selectedDate;
-    });
-  };
-
-  const formatTime = (time: string) => {
-    const date = new Date(`2000-01-01T${time}`);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const getCategoryInfo = (categoryValue: string) => {
-    return categories.find(cat => cat.value === categoryValue) || categories[0];
-  };
-
-  const getTimeProgress = () => {
-    const currentBlocks = getCurrentTimeBlocks();
-    const completedCount = currentBlocks.filter(block => block.completed).length;
-    return {
-      completed: completedCount,
-      total: currentBlocks.length,
-      percentage: currentBlocks.length > 0 ? Math.round((completedCount / currentBlocks.length) * 100) : 0
-    };
-  };
-
-  // Export Functions
-  const exportProjectToCSV = (project: ProjectPlan) => {
-    const headers = ['Phase', 'Weeks', 'Tasks'];
-    const csvRows = [
-      headers.join(','),
-      ...project.phases.flatMap(phase => [
-        `"${phase.name}"`,
-        phase.weeks,
-        `"${phase.tasks.join('; ')}"`
-      ].join(','))
+  const generateWaterfall = () => {
+    const idea = ideas[0];
+    const rawPercentages = [0.1, 0.15, 0.45, 0.2, 0.1];
+    const phases: Phase[] = [
+      { name: 'Planning Phase', tasks: ['Requirement gathering', 'Feasibility study'] },
+      { name: 'Design Phase', tasks: ['System & UI design mockups'] },
+      { name: 'Development Phase', tasks: Object.values(idea.tasks) },
+      { name: 'Testing Phase', tasks: ['Functional testing', 'Bug fixing'] },
+      { name: 'Deployment Phase', tasks: ['Release to production', 'Post-deployment checks'] }
     ];
-    
-    const csvContent = `Project: ${project.name}\nDuration: ${project.durationWeeks} weeks\nStart Date: ${project.startDate}\n\n${csvRows.join('\n')}`;
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `${project.name.replace(/[^a-z0-9]/gi, '_')}_plan.csv`);
-  };
 
-  const exportProjectToPDF = async (project: ProjectPlan) => {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 800]);
-    const { width, height } = page.getSize();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    
-    let y = height - 50;
-    
-    // Title
-    page.drawText(project.name, {
-      x: 50,
-      y,
-      size: 24,
-      font: boldFont,
-      color: rgb(0, 0, 0)
-    });
-    y -= 30;
-    
-    // Metadata
-    page.drawText(`Duration: ${project.durationWeeks} weeks | Start Date: ${project.startDate}`, {
-      x: 50,
-      y,
-      size: 12,
-      font,
-      color: rgb(0, 0, 0)
-    });
-    y -= 40;
-    
-    // Phases
-    page.drawText('Project Plan:', {
-      x: 50,
-      y,
-      size: 16,
-      font: boldFont,
-      color: rgb(0, 0, 0)
-    });
-    y -= 30;
-    
-    for (const phase of project.phases) {
-      // Phase header
-      page.drawText(`${phase.name} (${phase.weeks} week${phase.weeks > 1 ? 's' : ''})`, {
-        x: 50,
-        y,
-        size: 14,
-        font: boldFont,
-        color: rgb(0, 0, 0.5)
-      });
-      y -= 20;
-      
-      // Tasks
-      for (const task of phase.tasks) {
-        if (y < 50) {
-          page = pdfDoc.addPage([600, 800]);
-          y = height - 50;
-        }
-        
-        page.drawText(`• ${task}`, {
-          x: 60,
-          y,
-          size: 12,
-          font,
-          color: rgb(0, 0, 0)
-        });
-        y -= 20;
+    if (timeValue !== '') {
+      const totalDays = convertToDays(Number(timeValue), timeUnit);
+
+      // 1. initial allocation in days (float)
+      const allocated = rawPercentages.map(p => totalDays * p);
+
+      // 2. round to whole days
+      let rounded = allocated.map(a => Math.max(Math.round(a), 1));
+
+      // 3. adjust to match total exactly
+      let diff = totalDays - rounded.reduce((a, b) => a + b, 0);
+
+      // add/subtract diff from largest phase (usually Development)
+      if (diff !== 0) {
+        const devIndex = 2; // Development phase index
+        rounded[devIndex] += diff;
       }
-      
-      y -= 10;
+
+      phases.forEach((phase, idx) => {
+        phase.name += ` (${readableDays(rounded[idx])})`;
+      });
     }
-    
-    const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    saveAs(blob, `${project.name.replace(/[^a-z0-9]/gi, '_')}_plan.pdf`);
+
+    setPhases(phases);
   };
 
-  const progress = getTimeProgress();
-  const currentBlocks = getCurrentTimeBlocks();
+  // convert input to days (float)
+  const convertToDays = (value: number, unit: 'days' | 'weeks' | 'months') => {
+    if (unit === 'days') return value;
+    if (unit === 'weeks') return value * 7;
+    return value * 30;
+  };
+
+  // convert number of days to readable string
+  const readableDays = (days: number) => {
+    if (days >= 30) return `${Math.round(days / 30)} months`;
+    if (days >= 7) return `${Math.round(days / 7)} weeks`;
+    return `${days} days`;
+  };
+
+
+  const generateAgile = () => {
+    const idea = ideas[0];
+    const devTasks = Object.values(idea.tasks);
+
+    let sprintCount = 10;
+    let sprintLength = 0;
+    let remainder = 0;
+    let devSprints = 0;
+
+    if (timeValue !== '') {
+      const res = getAgileSprints(Number(timeValue), timeUnit, devTasks.length);
+      sprintCount = res.sprintCount;
+      sprintLength = res.sprintLength;
+      remainder = res.remainder;
+      devSprints = res.devSprints;
+    } else {
+      devSprints = Math.max(1, devTasks.length); // fallback
+    }
+
+    const phases: Phase[] = [];
+
+    for (let i = 0; i < sprintCount; i++) {
+      let name = '';
+      let tasks: string[] = [];
+
+      if (i === 0) {
+        name = 'Planning';
+        tasks = ['Plan backlog, define priorities'];
+      } else if (i === sprintCount - 2) {
+        name = 'Testing';
+        tasks = ['Test implemented features', 'Fix bugs'];
+      } else if (i === sprintCount - 1) {
+        name = 'Finalization & Deployment';
+        tasks = ['Finalize app', 'Deploy to production'];
+      } else {
+        name = 'Development';
+        const devSprintIndex = i - 1; // shift past Planning
+        const tasksPerSprint = Math.ceil(devTasks.length / devSprints);
+        const startIdx = devSprintIndex * tasksPerSprint;
+        const endIdx = startIdx + tasksPerSprint;
+        tasks = devTasks.slice(startIdx, endIdx);
+        if (tasks.length === 0) tasks = ['Buffer'];
+      }
+
+      phases.push({
+        name: name + (timeValue !== '' ? ` (${convertDuration(sprintLength, 'days')})` : ''),
+        tasks
+      });
+    }
+
+    // optionally add leftover days to last sprint
+    if (remainder > 0 && phases.length > 0) {
+      phases[phases.length - 1].name += ` (+${readableDays(remainder)})`;
+    }
+
+    setPhases(phases);
+  };
+
+
+
+  const convertDuration = (value: number, unit: 'days' | 'weeks' | 'months'): string => {
+    let days = 0;
+
+    if (unit === 'days') days = value;
+    if (unit === 'weeks') days = value * 7;
+    if (unit === 'months') days = value * 30; // rough month = 30 days
+
+    // Minimal unit = days
+    if (days < 1) days = 1;
+
+    if (days >= 30) {
+      const months = (days / 30).toFixed(1);
+      return `${months} months`;
+    } else if (days >= 7) {
+      const weeks = (days / 7).toFixed(1);
+      return `${weeks} weeks`;
+    } else {
+      return `${Math.round(days)} days`;
+    }
+  };
+
+  const getAgileSprints = (
+    totalTime: number,
+    unit: 'days' | 'weeks' | 'months',
+    devTaskCount: number,
+    maxSprints = 30 // lock max sprints
+  ) => {
+    const totalDays = convertToDays(totalTime, unit);
+
+    const minSprintLength = 1;   // min 1 day per sprint
+
+    // minimal sprints: Planning + 1 dev + Testing + Deployment
+    let sprintCount = 4;
+    let devSprints = 1;
+
+    // reserve min days for Planning, Testing, Deployment
+    const remainingDays = totalDays - 3 * minSprintLength;
+
+    // cannot have more dev sprints than days or tasks
+    devSprints = Math.min(devTaskCount, remainingDays);
+    if (devSprints < 1) devSprints = 1;
+
+    sprintCount = devSprints + 3;
+
+    // lock total sprint count to maxSprints
+    if (sprintCount > maxSprints) {
+      devSprints = maxSprints - 3;
+      sprintCount = maxSprints;
+    }
+
+    const sprintLength = Math.floor(totalDays / sprintCount);
+    const usedDays = sprintLength * sprintCount;
+    const remainder = totalDays - usedDays;
+
+    return { sprintCount, sprintLength, remainder, devSprints };
+  };
+
+
+
+
+
+  const handleTabClick = (tab: 'waterfall' | 'agile') => {
+    setActiveTab(tab);
+    if (tab === 'waterfall') generateWaterfall();
+    else generateAgile();
+  };
+
+  if (!user || !ideas || ideas.length === 0) {
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.modal}>
+          <div className={styles.header}>
+            <h2 className={styles.title}>Time Planner</h2>
+            <button onClick={onClose} className={styles.closeButton}>✕</button>
+          </div>
+          <div className={styles.content}>
+            <p>No idea loaded or user not authenticated</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const idea = ideas[0];
 
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            <span className={styles.icon}>⏰</span>
-            Time Planner
+            <span className={styles.icon}>⏰</span> {idea.idea_name}
           </h2>
-          <button onClick={onClose} className={styles.closeButton}>
-            ✕
-          </button>
+          <button onClick={onClose} className={styles.closeButton}>✕</button>
         </div>
 
-        <div className={styles.tabs}>
-          <button
-            className={`${styles.tabButton} ${activeTab === 'daily' ? styles.activeTab : ''}`}
-            onClick={() => setActiveTab('daily')}
-          >
-            Daily Planner
-          </button>
-          <button
-            className={`${styles.tabButton} ${activeTab === 'project' ? styles.activeTab : ''}`}
-            onClick={() => setActiveTab('project')}
-          >
-            Project Planner
-          </button>
-        </div>
+        <div className={styles.timeInputRow}>
 
-        <div className={styles.content}>
-          {activeTab === 'daily' ? (
-            <>
-              <div className={styles.controls}>
-                <div className={styles.dateSection}>
-                  <label htmlFor="date-selector" className={styles.label}>
-                    Select Date:
-                  </label>
-                  <input
-                    id="date-selector"
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className={styles.dateInput}
-                  />
-                </div>
 
-                <div className={styles.stats}>
-                  <div className={styles.stat}>
-                    <span className={styles.statNumber}>{progress.completed}</span>
-                    <span className={styles.statLabel}>Completed</span>
-                  </div>
-                  <div className={styles.stat}>
-                    <span className={styles.statNumber}>{progress.total - progress.completed}</span>
-                    <span className={styles.statLabel}>Remaining</span>
-                  </div>
-                  <div className={styles.stat}>
-                    <span className={styles.statNumber}>{progress.percentage}%</span>
-                    <span className={styles.statLabel}>Progress</span>
-                  </div>
-                </div>
+          <div className={styles.content}>
+            <input
+              type="number"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="Enter duration"
+              className={styles.numberInput}
+            />
+            <select
+              value={timeUnit}
+              onChange={(e) => setTimeUnit(e.target.value as 'days' | 'weeks' | 'months')}
+              className={styles.dropdown}
+            >
+              <option value="days">Days</option>
+              <option value="weeks">Weeks</option>
+              <option value="months">Months</option>
+            </select>
+          </div>
+          <div className={styles.tabButtons}>
+            {activeTab !== 'waterfall' && (
+              <button onClick={() => handleTabClick('waterfall')} className={styles.addButton}>
+                Show Waterfall
+              </button>
+            )}
+            {activeTab !== 'agile' && (
+              <button onClick={() => handleTabClick('agile')} className={styles.addButton}>
+                Show Agile
+              </button>
+            )}
+          </div>
 
-                <button
-                  onClick={() => setIsAddingBlock(true)}
-                  className={styles.addButton}
-                >
-                  <span>+</span>
-                  Add Time Block
-                </button>
-              </div>
-
-              {isAddingBlock && (
-                <div className={styles.addForm}>
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Title *</label>
-                      <input
-                        type="text"
-                        value={newBlock.title}
-                        onChange={(e) => setNewBlock(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="e.g., Team Meeting"
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Category</label>
-                      <select
-                        value={newBlock.category}
-                        onChange={(e) => setNewBlock(prev => ({ ...prev, category: e.target.value }))}
-                        className={styles.select}
-                      >
-                        {categories.map(cat => (
-                          <option key={cat.value} value={cat.value}>
-                            {cat.icon} {cat.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Start Time *</label>
-                      <input
-                        type="time"
-                        value={newBlock.startTime}
-                        onChange={(e) => setNewBlock(prev => ({ ...prev, startTime: e.target.value }))}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>End Time *</label>
-                      <input
-                        type="time"
-                        value={newBlock.endTime}
-                        onChange={(e) => setNewBlock(prev => ({ ...prev, endTime: e.target.value }))}
-                        className={styles.input}
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Description (Optional)</label>
-                    <textarea
-                      value={newBlock.description}
-                      onChange={(e) => setNewBlock(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Additional details..."
-                      className={styles.textarea}
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className={styles.formActions}>
-                    <button
-                      onClick={() => {
-                        setIsAddingBlock(false);
-                        resetNewBlockForm();
-                      }}
-                      className={styles.cancelButton}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={addTimeBlock}
-                      className={styles.saveButton}
-                      disabled={!newBlock.title.trim() || !newBlock.startTime || !newBlock.endTime}
-                    >
-                      Add Block
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className={styles.blocksSection}>
-                <h3 className={styles.sectionTitle}>
-                  Schedule for {new Date(selectedDate).toLocaleDateString()}
-                </h3>
-
-                {currentBlocks.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <div className={styles.emptyIcon}>📅</div>
-                    <p className={styles.emptyText}>
-                      No time blocks scheduled for this date. Add your first block above!
-                    </p>
-                  </div>
-                ) : (
-                  <div className={styles.blocksList}>
-                    {currentBlocks.map(block => {
-                      const categoryInfo = getCategoryInfo(block.category);
-                      return (
-                        <div 
-                          key={block.id} 
-                          className={`${styles.timeBlock} ${block.completed ? styles.completed : ''}`}
-                          style={{ '--category-color': categoryInfo.color } as React.CSSProperties}
-                        >
-                          <div className={styles.blockTime}>
-                            <span className={styles.timeRange}>
-                              {formatTime(block.startTime)} - {formatTime(block.endTime)}
-                            </span>
-                            <div className={styles.categoryBadge}>
-                              <span className={styles.categoryIcon}>{categoryInfo.icon}</span>
-                              <span className={styles.categoryName}>{categoryInfo.label}</span>
-                            </div>
-                          </div>
-                          
-                          <div className={styles.blockContent}>
-                            <div className={styles.blockHeader}>
-                              <h4 className={styles.blockTitle}>{block.title}</h4>
-                              <div className={styles.blockActions}>
-                                <button
-                                  onClick={() => toggleBlockCompletion(block.id)}
-                                  className={styles.completeButton}
-                                  title={block.completed ? 'Mark as incomplete' : 'Mark as complete'}
-                                >
-                                  {block.completed ? '✓' : '○'}
-                                </button>
-                                <button
-                                  onClick={() => deleteBlock(block.id)}
-                                  className={styles.deleteButton}
-                                  title="Delete block"
-                                >
-                                  🗑️
-                                </button>
-                              </div>
-                            </div>
-                            
-                            {block.description && (
-                              <p className={styles.blockDescription}>{block.description}</p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className={styles.controls}>
-                <button
-                  onClick={() => setIsAddingProject(true)}
-                  className={styles.addButton}
-                >
-                  <span>+</span>
-                  Create New Project Plan
-                </button>
-              </div>
-
-              {isAddingProject && (
-                <div className={styles.addForm}>
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Project Name *</label>
-                      <input
-                        type="text"
-                        value={newProject.name}
-                        onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="e.g., Website Redesign"
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Start Date</label>
-                      <input
-                        type="date"
-                        value={newProject.startDate}
-                        onChange={(e) => setNewProject(prev => ({ ...prev, startDate: e.target.value }))}
-                        className={styles.input}
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Duration (weeks) *</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="52"
-                      value={newProject.durationWeeks}
-                      onChange={(e) => setNewProject(prev => ({ ...prev, durationWeeks: parseInt(e.target.value) || 1 }))}
-                      className={styles.input}
-                    />
-                  </div>
-
-                  <div className={styles.previewSection}>
-                    <h4 className={styles.previewTitle}>Project Plan Preview</h4>
-                    {newProject.durationWeeks > 0 && (
-                      <div className={styles.planPreview}>
-                        {generateSDLCPlan(newProject.durationWeeks).map((phase, index) => (
-                          <div key={index} className={styles.phasePreview}>
-                            <div className={styles.phaseHeader}>
-                              <span className={styles.phaseName}>{phase.name}</span>
-                              <span className={styles.phaseWeeks}>{phase.weeks} week{phase.weeks !== 1 ? 's' : ''}</span>
-                            </div>
-                            <ul className={styles.phaseTasks}>
-                              {phase.tasks.map((task, taskIndex) => (
-                                <li key={taskIndex}>{task}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={styles.formActions}>
-                    <button
-                      onClick={() => {
-                        setIsAddingProject(false);
-                        resetNewProjectForm();
-                      }}
-                      className={styles.cancelButton}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={addProjectPlan}
-                      className={styles.saveButton}
-                      disabled={!newProject.name.trim() || newProject.durationWeeks < 1}
-                    >
-                      Create Project Plan
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className={styles.blocksSection}>
-                <h3 className={styles.sectionTitle}>
-                  Your Project Plans
-                </h3>
-
-                {projectPlans.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <div className={styles.emptyIcon}>📋</div>
-                    <p className={styles.emptyText}>
-                      No project plans yet. Create your first plan above!
-                    </p>
-                  </div>
-                ) : (
-                  <div className={styles.projectList}>
-                    {projectPlans.map(project => (
-                      <div key={project.id} className={styles.projectCard}>
-                        <div className={styles.projectHeader}>
-                          <h4 className={styles.projectName}>{project.name}</h4>
-                          <div className={styles.projectMeta}>
-                            <span>{project.durationWeeks} weeks</span>
-                            <span>Starts: {project.startDate}</span>
-                          </div>
-                          <div className={styles.projectActions}>
-                            <button
-                              onClick={() => exportProjectToCSV(project)}
-                              className={styles.exportButton}
-                              title="Export to CSV"
-                            >
-                              CSV
-                            </button>
-                            <button
-                              onClick={() => exportProjectToPDF(project)}
-                              className={styles.exportButton}
-                              title="Export to PDF"
-                            >
-                              PDF
-                            </button>
-                            <button
-                              onClick={() => deleteProject(project.id)}
-                              className={styles.deleteButton}
-                              title="Delete project"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div className={styles.projectPhases}>
-                          {project.phases.map((phase, index) => (
-                            <div key={index} className={styles.projectPhase}>
-                              <div className={styles.phaseHeader}>
-                                <h5 className={styles.phaseName}>{phase.name}</h5>
-                                <span className={styles.phaseDuration}>{phase.weeks} week{phase.weeks !== 1 ? 's' : ''}</span>
-                              </div>
-                              <ul className={styles.phaseTasks}>
-                                {phase.tasks.map((task, taskIndex) => (
-                                  <li key={taskIndex}>{task}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+          {activeTab && (
+            <div className={styles.phasesContainer}>
+              {phases.map((phase, index) => (
+                <div key={index} className={styles.phaseCard}>
+                  <h3 className={styles.phaseTitle}>{phase.name}</h3>
+                  <ul className={styles.taskList}>
+                    {phase.tasks.map((task, idx) => (
+                      <li key={idx} className={styles.taskItem}>{task}</li>
                     ))}
-                  </div>
-                )}
-              </div>
-            </>
+                  </ul>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
