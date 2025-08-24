@@ -31,13 +31,14 @@
 
 .title {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   margin: 0;
-  background: linear-gradient(135deg, #f8f8f8 0%, #d1d5db 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.5px;
 }
 
 .userSection {
@@ -58,6 +59,13 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 .userDetails {
   display: none;
@@ -85,9 +93,9 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -95,9 +103,24 @@
   gap: 0.5rem;
 }
 
+.signOutButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.signOutButton:hover::before {
+  left: 100%;
+}
+
 .signOutButton span {
   font-size: 1rem;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
 .signOutButton:hover span {
@@ -108,8 +131,8 @@
   background: #ef4444;
   color: white;
   border-color: #ef4444;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
 }
 
 .signOutButton:active {
@@ -125,92 +148,140 @@
 }
 
 .welcomeSection {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   text-align: center;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .welcomeTitle {
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
   line-height: 1.2;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .welcomeText {
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--text-secondary);
   margin: 0;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .actionSection {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
 .sectionTitle {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1.75rem 0;
   text-align: center;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.sectionTitle::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 3px;
 }
 
 .actionGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .actionCard {
   background: var(--surface-color);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 16px;
+  padding: 1.75rem;
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 1.25rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.actionCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.actionCard:hover::before {
+  opacity: 0.03;
 }
 
 .actionCard:hover {
-  border-color: var(--accent-color);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transform: translateY(-1px);
+  border-color: transparent;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15), 0 8px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
 }
 
 .actionIcon {
-  font-size: 1.5rem;
-  background: linear-gradient(135deg, var(--accent-color) 0%, #8b5cf6 100%);
+  font-size: 1.75rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  min-width: 2rem;
+  min-width: 2.5rem;
   text-align: center;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.actionCard:hover .actionIcon {
+  transform: scale(1.1);
 }
 
 .actionContent {
   flex: 1;
+  z-index: 1;
 }
 
 .actionTitle {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
   line-height: 1.2;
+  transition: color 0.3s ease;
 }
 
 .actionDescription {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--text-secondary);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
+  transition: color 0.3s ease;
 }
 
 .loadingContainer {
@@ -219,14 +290,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.25rem;
   background: var(--background-color);
   color: var(--text-secondary);
 }
 
 .spinner {
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border: 3px solid var(--border-color);
   border-top: 3px solid var(--accent-color);
   border-radius: 50%;
@@ -239,6 +310,17 @@
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Tablet styles */
 @media (min-width: 768px) {
   .header {
@@ -246,7 +328,7 @@
   }
 
   .title {
-    font-size: 1.75rem;
+    font-size: 1.875rem;
   }
 
   .userDetails {
@@ -254,20 +336,26 @@
   }
 
   .main {
-    padding: 2rem;
+    padding: 2.5rem;
   }
 
   .welcomeTitle {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 
   .actionGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 1.75rem;
   }
 
   .sectionTitle {
     text-align: left;
+    padding-left: 0.5rem;
+  }
+
+  .sectionTitle::after {
+    left: 0;
+    transform: none;
   }
 
   .welcomeSection {
@@ -282,15 +370,15 @@
   }
 
   .title {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 
   .main {
-    padding: 3rem 2rem;
+    padding: 3.5rem 2.5rem;
   }
 
   .welcomeTitle {
-    font-size: 2.25rem;
+    font-size: 2.75rem;
   }
 
   .actionGrid {
@@ -299,11 +387,11 @@
   }
 
   .actionCard {
-    padding: 2rem;
+    padding: 2.25rem;
   }
 
   .actionIcon {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 }
 
@@ -323,8 +411,8 @@
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .dashboardContainer,
-  .dashboardContainer * {
+  .container,
+  .container * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -345,5 +433,10 @@
   .actionCard {
     box-shadow: none;
     border: 1px solid #e2e8f0;
+  }
+  
+  .actionCard:hover {
+    transform: none;
+    box-shadow: none;
   }
 }
