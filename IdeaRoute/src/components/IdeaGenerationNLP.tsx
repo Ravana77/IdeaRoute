@@ -1,347 +1,432 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import styles from './IdeaGenerationNLP.module.css';
+import React, { useState } from 'react';
 
-// Interface for each idea block
-interface IdeaBlock {
-  id: string;
-  title: string;
-  startTime: string;
-  endTime: string;
-  category: string;
-  description?: string;
-  completed: boolean;
-  createdAt: Date;
-}
-
-// Props interface
+// Props interface for the component
 interface IdeaGenerationNLPProps {
   onClose: () => void;
 }
 
-// Main component
+// Interface for the input data sent to the backend
+interface IdeaRequest {
+  hobbies: string;
+  careerGoal: string;
+  interestedFields: string;
+  familiarTechnologies: string;
+  skillLevel: string;
+}
+
+// Interface for the response received from the backend
+interface IdeaResponse {
+  undergraduateProject: string;
+  helpedPlatformsAndWebsites: string;
+}
+
+// Main component, now accepting the onClose prop again.
 const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
-  const [ideaBlocks, setIdeaBlocks] = useState<IdeaBlock[]>([]);
-  const [isAddingBlock, setIsAddingBlock] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [newBlock, setNewBlock] = useState({
-    title: '',
-    startTime: '',
-    endTime: '',
-    category: 'work',
-    description: ''
+  // State for the user's input to the five questions
+  const [input, setInput] = useState<IdeaRequest>({
+    hobbies: '',
+    careerGoal: '',
+    interestedFields: '',
+    familiarTechnologies: '',
+    skillLevel: 'Beginner', // Default skill level
   });
 
-  // Categories (kept same for now)
-  const categories = [
-    { value: 'work', label: 'Work', color: '#3b82f6', icon: '💼' },
-    { value: 'personal', label: 'Personal', color: '#10b981', icon: '👤' },
-    { value: 'health', label: 'Health', color: '#f59e0b', icon: '🏃' },
-    { value: 'learning', label: 'Learning', color: '#8b5cf6', icon: '📚' },
-    { value: 'social', label: 'Social', color: '#ef4444', icon: '👥' },
-    { value: 'break', label: 'Break', color: '#6b7280', icon: '☕' }
-  ];
+  // State for the generated output from the backend
+  const [output, setOutput] = useState<IdeaResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load idea blocks from localStorage
-  useEffect(() => {
-    const savedBlocks = localStorage.getItem('idea-generation-nlp-blocks');
-    if (savedBlocks) {
-      try {
-        const parsed = JSON.parse(savedBlocks);
-        setIdeaBlocks(parsed.map((block: any) => ({
-          ...block,
-          createdAt: new Date(block.createdAt)
-        })));
-      } catch (error) {
-        console.error('Error loading idea blocks:', error);
+  // Handle changes to the form inputs
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setInput(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Function to call the Python backend API
+  const generateIdea = async () => {
+    setIsLoading(true);
+    setError(null);
+    setOutput(null);
+
+    // The URL of the Flask backend API you are running
+    const apiUrl = 'http://localhost:5000/generate_idea';
+
+    // The data payload, formatted to match the backend's expected JSON
+    const payload = {
+      hobbies: input.hobbies,
+      career_goal: input.careerGoal,
+      interested_fields: input.interestedFields,
+      familiar_technologies: input.familiarTechnologies,
+      skill_level: input.skillLevel,
+    };
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate idea from the backend.');
       }
+
+      const result: IdeaResponse = await response.json();
+      setOutput(result);
+      
+    } catch (e: any) {
+      console.error('Error generating idea:', e);
+      setError(e.message || 'Failed to generate idea. Please ensure the backend is running and accessible.');
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
-
-  // Save idea blocks to localStorage
-  useEffect(() => {
-    localStorage.setItem('idea-generation-nlp-blocks', JSON.stringify(ideaBlocks));
-  }, [ideaBlocks]);
-
-  // Add new block
-  const addIdeaBlock = () => {
-    if (!newBlock.title.trim() || !newBlock.startTime || !newBlock.endTime) return;
-
-    const block: IdeaBlock = {
-      id: Date.now().toString(),
-      title: newBlock.title.trim(),
-      startTime: newBlock.startTime,
-      endTime: newBlock.endTime,
-      category: newBlock.category,
-      description: newBlock.description.trim(),
-      completed: false,
-      createdAt: new Date()
-    };
-
-    setIdeaBlocks(prev => [...prev, block].sort((a, b) =>
-      a.startTime.localeCompare(b.startTime)
-    ));
-
-    setNewBlock({
-      title: '',
-      startTime: '',
-      endTime: '',
-      category: 'work',
-      description: ''
-    });
-    setIsAddingBlock(false);
   };
-
-  // Toggle completion
-  const toggleBlockCompletion = (id: string) => {
-    setIdeaBlocks(prev =>
-      prev.map(block =>
-        block.id === id ? { ...block, completed: !block.completed } : block
-      )
-    );
-  };
-
-  // Delete block
-  const deleteBlock = (id: string) => {
-    setIdeaBlocks(prev => prev.filter(block => block.id !== id));
-  };
-
-  // Filter by selected date
-  const getCurrentIdeaBlocks = () => {
-    return ideaBlocks.filter(block => {
-      const blockDate = new Date(block.createdAt).toISOString().split('T')[0];
-      return blockDate === selectedDate;
-    });
-  };
-
-  // Format time (HH:MM AM/PM)
-  const formatTime = (time: string) => {
-    const date = new Date(`2000-01-01T${time}`);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  // Get category info
-  const getCategoryInfo = (categoryValue: string) => {
-    return categories.find(cat => cat.value === categoryValue) || categories[0];
-  };
-
-  // Calculate progress
-  const getProgress = () => {
-    const currentBlocks = getCurrentIdeaBlocks();
-    const completedCount = currentBlocks.filter(block => block.completed).length;
-    return {
-      completed: completedCount,
-      total: currentBlocks.length,
-      percentage: currentBlocks.length > 0 ? Math.round((completedCount / currentBlocks.length) * 100) : 0
-    };
-  };
-
-  const progress = getProgress();
-  const currentBlocks = getCurrentIdeaBlocks();
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>
-            <span className={styles.icon}>💡</span>
-            Idea Generation (NLP)
+    // The overlay is now a modal, so it should close when the user clicks outside or on a close button.
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}> {/* Prevent clicks inside the modal from closing it */}
+        <div className="header">
+          <h2 className="title">
+            <span className="icon">💡</span>
+            Undergraduate Project Idea Generator
           </h2>
-          <button onClick={onClose} className={styles.closeButton}>
-            ✕
-          </button>
+          <button className="closeButton" onClick={onClose}>&times;</button>
         </div>
-
-        <div className={styles.content}>
-          {/* Controls */}
-          <div className={styles.controls}>
-            <div className={styles.dateSection}>
-              <label htmlFor="date-selector" className={styles.label}>
-                Select Date:
-              </label>
+        <div className="content">
+          <p className="blockDescription text-center">
+            Fill out the form to receive a personalized undergraduate project idea and helpful resources.
+          </p>
+          <div className="addForm">
+            <div className="formGroup">
+              <label className="label">1. What are your hobbies?</label>
               <input
-                id="date-selector"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className={styles.dateInput}
+                type="text"
+                name="hobbies"
+                value={input.hobbies}
+                onChange={handleInputChange}
+                className="input"
+                placeholder="e.g., Playing games, Reading, Traveling"
               />
             </div>
-
-            <div className={styles.stats}>
-              <div className={styles.stat}>
-                <span className={styles.statNumber}>{progress.completed}</span>
-                <span className={styles.statLabel}>Completed</span>
-              </div>
-              <div className={styles.stat}>
-                <span className={styles.statNumber}>{progress.total - progress.completed}</span>
-                <span className={styles.statLabel}>Remaining</span>
-              </div>
-              <div className={styles.stat}>
-                <span className={styles.statNumber}>{progress.percentage}%</span>
-                <span className={styles.statLabel}>Progress</span>
-              </div>
+            <div className="formGroup">
+              <label className="label">2. What is your career goal?</label>
+              <input
+                type="text"
+                name="careerGoal"
+                value={input.careerGoal}
+                onChange={handleInputChange}
+                className="input"
+                placeholder="e.g., Web Developer, Data Scientist, DevOps Engineer"
+              />
             </div>
-
-            <button
-              onClick={() => setIsAddingBlock(true)}
-              className={styles.addButton}
-            >
-              <span>+</span>
-              Add Idea Block
-            </button>
+            <div className="formGroup">
+              <label className="label">3. What are your interested fields?</label>
+              <input
+                type="text"
+                name="interestedFields"
+                value={input.interestedFields}
+                onChange={handleInputChange}
+                className="input"
+                placeholder="e.g., E-commerce, Gaming, Sustainable Tourism"
+              />
+            </div>
+            <div className="formGroup">
+              <label className="label">4. What familiar technologies do you have?</label>
+              <input
+                type="text"
+                name="familiarTechnologies"
+                value={input.familiarTechnologies}
+                onChange={handleInputChange}
+                className="input"
+                placeholder="e.g., Python, React, Firebase"
+              />
+            </div>
+            <div className="formGroup">
+              <label className="label">5. What is your skill level?</label>
+              <select
+                name="skillLevel"
+                value={input.skillLevel}
+                onChange={handleInputChange}
+                className="select"
+              >
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+            
+            <div className="formActions">
+              <button
+                onClick={generateIdea}
+                className="saveButton"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Generating...' : 'Generate Idea'}
+              </button>
+            </div>
           </div>
-
-          {/* Add Form */}
-          {isAddingBlock && (
-            <div className={styles.addForm}>
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Title *</label>
-                  <input
-                    type="text"
-                    value={newBlock.title}
-                    onChange={(e) => setNewBlock(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="e.g., AI Project Idea"
-                    className={styles.input}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Category</label>
-                  <select
-                    value={newBlock.category}
-                    onChange={(e) => setNewBlock(prev => ({ ...prev, category: e.target.value }))}
-                    className={styles.select}
-                  >
-                    {categories.map(cat => (
-                      <option key={cat.value} value={cat.value}>
-                        {cat.icon} {cat.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          
+          {output && (
+            <div className="addForm" style={{ marginTop: '1.5rem', display: 'block' }}>
+              <h3 className="text-lg font-bold text-center" style={{ marginBottom: '1rem' }}>Generated Idea</h3>
+              <div className="blockContent" style={{ marginBottom: '1rem' }}>
+                <h4 className="font-semibold" style={{ marginBottom: '0.5rem' }}>Undergraduate Project:</h4>
+                <p>{output.undergraduateProject}</p>
               </div>
-
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Start Time *</label>
-                  <input
-                    type="time"
-                    value={newBlock.startTime}
-                    onChange={(e) => setNewBlock(prev => ({ ...prev, startTime: e.target.value }))}
-                    className={styles.input}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>End Time *</label>
-                  <input
-                    type="time"
-                    value={newBlock.endTime}
-                    onChange={(e) => setNewBlock(prev => ({ ...prev, endTime: e.target.value }))}
-                    className={styles.input}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Description (Optional)</label>
-                <textarea
-                  value={newBlock.description}
-                  onChange={(e) => setNewBlock(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Additional details..."
-                  className={styles.textarea}
-                  rows={2}
-                />
-              </div>
-
-              <div className={styles.formActions}>
-                <button
-                  onClick={() => setIsAddingBlock(false)}
-                  className={styles.cancelButton}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={addIdeaBlock}
-                  className={styles.saveButton}
-                  disabled={!newBlock.title.trim() || !newBlock.startTime || !newBlock.endTime}
-                >
-                  Add Block
-                </button>
+              <div className="blockContent">
+                <h4 className="font-semibold" style={{ marginBottom: '0.5rem' }}>Helpful Platforms & Websites:</h4>
+                <p>{output.helpedPlatformsAndWebsites}</p>
               </div>
             </div>
           )}
 
-          {/* Blocks List */}
-          <div className={styles.blocksSection}>
-            <h3 className={styles.sectionTitle}>
-              Ideas for {new Date(selectedDate).toLocaleDateString()}
-            </h3>
-
-            {currentBlocks.length === 0 ? (
-              <div className={styles.emptyState}>
-                <div className={styles.emptyIcon}>📅</div>
-                <p className={styles.emptyText}>
-                  No ideas scheduled for this date. Add your first one above!
-                </p>
-              </div>
-            ) : (
-              <div className={styles.blocksList}>
-                {currentBlocks.map(block => {
-                  const categoryInfo = getCategoryInfo(block.category);
-                  return (
-                    <div
-                      key={block.id}
-                      className={`${styles.ideaBlock} ${block.completed ? styles.completed : ''}`}
-                      style={{ '--category-color': categoryInfo.color } as React.CSSProperties}
-                    >
-                      <div className={styles.blockTime}>
-                        <span className={styles.timeRange}>
-                          {formatTime(block.startTime)} - {formatTime(block.endTime)}
-                        </span>
-                        <div className={styles.categoryBadge}>
-                          <span className={styles.categoryIcon}>{categoryInfo.icon}</span>
-                          <span className={styles.categoryName}>{categoryInfo.label}</span>
-                        </div>
-                      </div>
-
-                      <div className={styles.blockContent}>
-                        <div className={styles.blockHeader}>
-                          <h4 className={styles.blockTitle}>{block.title}</h4>
-                          <div className={styles.blockActions}>
-                            <button
-                              onClick={() => toggleBlockCompletion(block.id)}
-                              className={styles.completeButton}
-                              title={block.completed ? 'Mark as incomplete' : 'Mark as complete'}
-                            >
-                              {block.completed ? '✓' : '○'}
-                            </button>
-                            <button
-                              onClick={() => deleteBlock(block.id)}
-                              className={styles.deleteButton}
-                              title="Delete block"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </div>
-
-                        {block.description && (
-                          <p className={styles.blockDescription}>{block.description}</p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {error && (
+            <div className="text-center bg-red-100 text-red-800 p-4 rounded-md" style={{ marginTop: '1.5rem' }}>
+              <p>{error}</p>
+            </div>
+          )}
         </div>
       </div>
+      <style jsx global>{`
+        /* Global styles */
+        :root {
+          --accent-orange: #f59e0b;
+          --accent-orange-dark: #d97706;
+          --accent-blue: #3b82f6;
+          --accent-blue-dark: #2563eb;
+          --success: #10b981;
+          --danger: #ef4444;
+          --warning: #f59e0b;
+          --surface-color: #ffffff;
+          --bg-secondary: #f8fafc;
+          --bg-tertiary: #f1f5f9;
+          --border-color: #e2e8f0;
+          --border-light: #e2e8f0;
+          --text-primary: #1f2937;
+          --text-secondary: #4b5563;
+          --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          --radius-md: 0.5rem;
+          --font-family: 'Inter', sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --surface-color: #1f2937;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --border-color: #374151;
+            --border-light: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+          }
+        }
+      `}</style>
+      <style jsx>{`
+        /* Component-specific styles */
+        .overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(21, 21, 21, 0.8);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 1rem;
+        }
+        
+        .modal {
+          background: var(--surface-color);
+          border-radius: var(--radius-md);
+          box-shadow: var(--shadow-large);
+          max-width: 900px;
+          height: auto;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        
+        .header {
+          padding: 1.5rem;
+          border-bottom: 1px solid var(--border-color);
+          background: var(--bg-tertiary);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .closeButton {
+          background: transparent;
+          border: none;
+          color: var(--text-secondary);
+          font-size: 2rem;
+          cursor: pointer;
+          line-height: 1;
+        }
+        
+        .title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .icon {
+          font-size: 1.75rem;
+          background: linear-gradient(to bottom right, var(--accent-orange), var(--accent-orange-dark));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        
+        .content {
+          padding: 1.5rem;
+          overflow-y: auto;
+          flex: 1;
+        }
+        
+        .blockDescription {
+          color: var(--text-secondary);
+          font-size: 0.875rem;
+          margin: 0 0 1rem 0;
+          line-height: 1.4;
+        }
+
+        .addForm {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          padding: 1.5rem;
+          display: grid;
+          gap: 1.5rem;
+          grid-template-columns: repeat(2, 1fr);
+        }
+        
+        @media (max-width: 768px) {
+          .addForm {
+            grid-template-columns: 1fr;
+          }
+        }
+        
+        .formGroup {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .label {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+        
+        .input, .select {
+          padding: 0.75rem;
+          background: var(--surface-color);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          color: var(--text-primary);
+          font-size: 1rem;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+
+        .input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        
+        .input:focus, .select:focus {
+          border-color: var(--accent-blue);
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .select {
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 0.75rem center;
+          background-size: 1rem;
+        }
+        
+        .formActions {
+          grid-column: span 2;
+          display: flex;
+          justify-content: center;
+        }
+        
+        @media (max-width: 768px) {
+          .formActions {
+            grid-column: span 1;
+          }
+        }
+        
+        .saveButton {
+          padding: 0.75rem 2rem;
+          background: var(--success);
+          color: white;
+          font-weight: 600;
+          border-radius: var(--radius-md);
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .saveButton:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 8px -2px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .saveButton:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+
+        .blockContent {
+          background: var(--surface-color);
+          padding: 1rem;
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border-color);
+        }
+
+        .text-center {
+          text-align: center;
+        }
+
+        .font-semibold {
+          font-weight: 600;
+        }
+
+        .font-bold {
+          font-weight: 700;
+        }
+
+        .p-4 { padding: 1rem; }
+        .text-red-800 { color: #991b1b; }
+        .bg-red-100 { background-color: #fee2e2; }
+        .rounded-md { border-radius: 0.375rem; }
+
+        @media (prefers-color-scheme: dark) {
+          .bg-white { background-color: #1f2937; }
+          .dark\\:bg-slate-800 { background-color: #1f2937; }
+          .dark\\:bg-slate-900 { background-color: #111827; }
+        }
+      `}</style>
     </div>
   );
 };
 
-// Export
 export default IdeaGenerationNLP;
