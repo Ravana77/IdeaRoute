@@ -146,40 +146,6 @@ const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>📝</div>
-            <div className={styles.statContent}>
-              <h3 className={styles.statNumber}>0</h3>
-              <p className={styles.statLabel}>Total Suggestions</p>
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>⭐</div>
-            <div className={styles.statContent}>
-              <h3 className={styles.statNumber}>0</h3>
-              <p className={styles.statLabel}>Favorites</p>
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>💬</div>
-            <div className={styles.statContent}>
-              <h3 className={styles.statNumber}>0</h3>
-              <p className={styles.statLabel}>Comments</p>
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>👥</div>
-            <div className={styles.statContent}>
-              <h3 className={styles.statNumber}>0</h3>
-              <p className={styles.statLabel}>Following</p>
-            </div>
-          </div>
-        </div>
-
         <div className={styles.actionSection}>
           <h3 className={styles.sectionTitle}>Core Functions</h3>
           <div className={styles.actionGrid}>
@@ -227,8 +193,6 @@ const DashboardPage: React.FC = () => {
         <div className={styles.actionSection}>
           <h3 className={styles.sectionTitle}>Quick Actions</h3>
           <div className={styles.actionGrid}>
-
-
             <button className={styles.actionCard}
             onClick={() => setActiveModal('IdeaGenerationNLP')}
             >
@@ -237,16 +201,6 @@ const DashboardPage: React.FC = () => {
                 <h4 className={styles.actionTitle}>Create Suggestion</h4>
                 <p className={styles.actionDescription}>
                   Share a new idea or suggestion with the community
-                </p>
-              </div>
-            </button>
-
-            <button className={styles.actionCard}>
-              <div className={styles.actionIcon}>🔍</div>
-              <div className={styles.actionContent}>
-                <h4 className={styles.actionTitle}>Browse Suggestions</h4>
-                <p className={styles.actionDescription}>
-                  Explore suggestions from other community members
                 </p>
               </div>
             </button>
