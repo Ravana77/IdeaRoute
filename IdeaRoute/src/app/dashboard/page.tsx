@@ -155,9 +155,9 @@ const DashboardPage: React.FC = () => {
             >
               <div className={styles.actionIcon}>✓</div>
               <div className={styles.actionContent}>
-                <h4 className={styles.actionTitle}>Checklist</h4>
+                <h4 className={styles.actionTitle}>QA Checklist</h4>
                 <p className={styles.actionDescription}>
-                  Create and manage your daily tasks and to-do items
+                  Start and streamline your project’s QA checklist
                 </p>
               </div>
             </button>
@@ -168,9 +168,9 @@ const DashboardPage: React.FC = () => {
             >
               <div className={styles.actionIcon}>🤖</div>
               <div className={styles.actionContent}>
-                <h4 className={styles.actionTitle}>AI Generate</h4>
+                <h4 className={styles.actionTitle}>Idea Genaration</h4>
                 <p className={styles.actionDescription}>
-                  Generate ideas, content, and solutions using AI assistance
+                  Generate an Ideas for your personality
                 </p>
               </div>
             </button>
@@ -183,7 +183,7 @@ const DashboardPage: React.FC = () => {
               <div className={styles.actionContent}>
                 <h4 className={styles.actionTitle}>Time Planner</h4>
                 <p className={styles.actionDescription}>
-                  Plan and organize your schedule with time blocks
+                  Plan and organize your project into phases and sprints
                 </p>
               </div>
             </button>
@@ -200,7 +200,7 @@ const DashboardPage: React.FC = () => {
               <div className={styles.actionContent}>
                 <h4 className={styles.actionTitle}>Create Suggestion</h4>
                 <p className={styles.actionDescription}>
-                  Share a new idea or suggestion with the community
+                  Testing NLP model 
                 </p>
               </div>
             </button>
