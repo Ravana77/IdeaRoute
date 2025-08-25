@@ -158,6 +158,9 @@ const AuthPage: React.FC = () => {
       <div className={styles.authCard}>
         <div className={styles.header}>
           <h1 className={styles.title}>
+            <span className={styles.authIcon}>
+              {mode === 'signin' ? '🔐' : '✨'}
+            </span>
             {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
           </h1>
           <p className={styles.subtitle}>
