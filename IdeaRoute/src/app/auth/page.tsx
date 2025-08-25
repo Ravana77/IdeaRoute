@@ -165,8 +165,8 @@ const AuthPage: React.FC = () => {
           </h1>
           <p className={styles.subtitle}>
             {mode === 'signin' 
-              ? 'Sign in to access your suggestion dashboard'
-              : 'Join our community and start sharing ideas'
+              ? 'Sign in to access your dashboard'
+              : 'Join our community and start your project now'
             }
           </p>
         </div>
