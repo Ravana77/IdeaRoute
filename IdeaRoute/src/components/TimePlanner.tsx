@@ -28,6 +28,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     if (!ideas || ideas.length === 0) console.warn('No ideas loaded');
   }, [ideas, user]);
 
+  // Generates the phases and tasks for the Waterfall project management method.
   const generateWaterfall = () => {
     const idea = ideas[0];
     const rawPercentages = [0.1, 0.15, 0.45, 0.2, 0.1];
@@ -65,21 +66,21 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     setPhases(phases);
   };
 
-  // convert input to days (float)
+  // Converts the input duration to days based on the selected unit.
   const convertToDays = (value: number, unit: 'days' | 'weeks' | 'months') => {
     if (unit === 'days') return value;
     if (unit === 'weeks') return value * 7;
     return value * 30;
   };
 
-  // convert number of days to readable string
+  // Returns a readable string for the number of days (e.g., "2 weeks", "1 month").
   const readableDays = (days: number) => {
     if (days >= 30) return `${Math.round(days / 30)} months`;
     if (days >= 7) return `${Math.round(days / 7)} weeks`;
     return `${days} days`;
   };
 
-
+  // Generates the phases and tasks for the Agile project management method.
   const generateAgile = () => {
     const idea = ideas[0];
     const devTasks = Object.values(idea.tasks);
@@ -138,8 +139,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     setPhases(phases);
   };
 
-
-
+  // Converts a duration value and unit to a readable string (e.g., "3 weeks").
   const convertDuration = (value: number, unit: 'days' | 'weeks' | 'months'): string => {
     let days = 0;
 
@@ -161,6 +161,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     }
   };
 
+  // Calculates the number of sprints and their length for Agile planning.
   const getAgileSprints = (
     totalTime: number,
     unit: 'days' | 'weeks' | 'months',
@@ -201,6 +202,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
 
 
 
+  // Handles tab switching between Waterfall and Agile, and triggers generation.
   const handleTabClick = (tab: 'waterfall' | 'agile') => {
     setActiveTab(tab);
     if (tab === 'waterfall') generateWaterfall();

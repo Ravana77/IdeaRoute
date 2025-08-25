@@ -39,12 +39,14 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
   const [error, setError] = useState<string | null>(null);
 
   // Handle changes to the form inputs
+  // Updates the state when the user types or selects something in the form.
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setInput(prev => ({ ...prev, [name]: value }));
   };
 
   // Function to call the Python backend API
+  // Sends the user's answers to the backend and receives a suggested project and resources.
   const generateIdea = async () => {
     setIsLoading(true);
     setError(null);

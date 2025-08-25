@@ -376,7 +376,7 @@ const AIGenerate: React.FC<AIGenerateProps> = ({ onClose }) => {
                       className={styles.copyButton}
                       title="Call Gemini"
                     >
-                      describe
+                      Save and describe
                     </button>
                   </div>
                 ))}

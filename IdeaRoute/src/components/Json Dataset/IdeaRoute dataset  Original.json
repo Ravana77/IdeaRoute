@@ -1089,12 +1089,12 @@
    "Helped platforms and  websites": "NASA API, AstroPy"
  },
  {
-   "Hobbies": "Leatherworking",
-   "Career goal": "E-commerce Developer",
-   "Interested  fields": "Crafts, AR",
-   "Familiar technologies": "React, ARKit, Node.js",
+   "Hobbies": "read",
+   "Career goal": "web developer",
+   "Interested  fields": "books",
+   "Familiar technologies": "html",
    "Skill level": "Intermediate",
-   "Undergraduate project": "AR pattern projection tool for leatherwork",
+   "Undergraduate project": "Track and store the books you have read and suggest new books based on your reading history using smart AI",
    "Helped platforms and  websites": "ARKit Docs, Etsy API"
  },
  {
@@ -1107,13 +1107,13 @@
    "Helped platforms and  websites": "MediaPipe, Sports APIs"
  },
  {
-   "Hobbies": "Vinyl Collecting",
-   "Career goal": "Audio Tech Developer",
-   "Interested  fields": "Music, Analytics",
-   "Familiar technologies": "Python, React, Spotify API",
+   "Hobbies": "collecting stamps",
+   "Career goal": "software engineer",
+   "Interested  fields": "stamps",
+   "Familiar technologies": "python,javascript",
    "Skill level": "Advanced",
-   "Undergraduate project": "Vinyl condition analyzer using audio AI",
-   "Helped platforms and  websites": "Discogs API, Librosa"
+   "Undergraduate project": "A website for stamp collectors to track their collections, find rare stamps, and connect with other enthusiasts",
+   "Helped platforms and  websites": "eBay API, OpenSea,stamp forums,Github"
  },
  {
    "Hobbies": "Pottery",
