@@ -29,7 +29,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
   }, [ideas, user]);
 
   const generateWaterfall = () => {
-    const idea = ideas[0];
+    const idea = ideas[ideas.length - 1];
     const rawPercentages = [0.1, 0.15, 0.45, 0.2, 0.1];
     const phases: Phase[] = [
       { name: 'Planning Phase', tasks: ['Requirement gathering', 'Feasibility study'] },
@@ -81,7 +81,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
 
 
   const generateAgile = () => {
-    const idea = ideas[0];
+    const idea = ideas[ideas.length - 1];
     const devTasks = Object.values(idea.tasks);
 
     let sprintCount = 10;
@@ -223,7 +223,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     );
   }
 
-  const idea = ideas[0];
+  const idea = ideas[ideas.length - 1];
 
   return (
     <div className={styles.overlay}>

@@ -1,11 +1,26 @@
 'use client';
 
+import { useAuth } from '@/context/AuthContext';
+import { useIdea } from '@/context/IdeaContext';
 import React, { useState } from 'react';
 
 // Props interface for the component
 interface IdeaGenerationNLPProps {
   onClose: () => void;
 }
+
+interface AIGenerateProps {
+  onClose: () => void;
+}
+
+interface GeneratedContent {
+  id: string;
+  type: string;
+  prompt: string;
+  content: string;
+  createdAt: Date;
+}
+
 
 // Interface for the input data sent to the backend
 interface IdeaRequest {
@@ -24,6 +39,10 @@ interface IdeaResponse {
 
 // Main component, now accepting the onClose prop again.
 const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<GeneratedContent[]>([]);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const { ideas, addIdea } = useIdea();
   // State for the user's input to the five questions
   const [input, setInput] = useState<IdeaRequest>({
     hobbies: '',
@@ -35,8 +54,12 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
 
   // State for the generated output from the backend
   const [output, setOutput] = useState<IdeaResponse | null>(null);
+  const [geminiOutput, setgeminiOutput] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isIdeaGenerated, setIsIdeaGenerated] = useState(false);
+  const [lastPayload, setLastPayload] = useState<IdeaRequest | null>(null);
+  const { user } = useAuth();
 
   // Handle changes to the form inputs
   // Updates the state when the user types or selects something in the form.
@@ -64,13 +87,15 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
       skill_level: input.skillLevel,
     };
 
+    setLastPayload(payload);
+
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to generate idea from the backend.');
@@ -78,12 +103,156 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
 
       const result: IdeaResponse = await response.json();
       setOutput(result);
-      
+      setIsIdeaGenerated(true);
+
+
     } catch (e: any) {
       console.error('Error generating idea:', e);
       setError(e.message || 'Failed to generate idea. Please ensure the backend is running and accessible.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const promptGemini = async (payload: IdeaRequest | null) => {
+    setIsGenerating(true);
+    const content = ""
+    if (!payload) {
+      // create custom payload
+      // const content = `Hobbies: Healthcare, 
+      // Career Goal: Software Engineer, 
+      // Interested Fields: Gaming, 
+      // Familiar Technologies: React, Firebase, Figma, 
+      // Skill Level: Intermediate`;
+
+      console.error('Payload is required to call Gemini API');
+      setIsGenerating(false);
+      return;
+    }
+    else{
+const content = `Hobbies: ${payload.hobbies}, Career Goal: ${payload.careerGoal}, Interested Fields: ${payload.interestedFields}, Familiar Technologies: ${payload.familiarTechnologies}, Skill Level: ${payload.skillLevel}`;
+
+    }
+    // Construct content string from payload
+
+    
+    // prompt: Rules for Gemini API call
+    // This prompt is designed to guide Gemini in generating a project idea based on the provided content
+
+    const ExampleFormat = `
+      {
+        "projectName": "string",
+        "description": "string",
+        "platforms": ["string"],
+        "timePlanner": {
+          "sprint1": "string",
+          "sprint2": "string",
+          "sprint3": "string"
+      }
+    `;
+    const prompt = `
+      You are an AI assistant that generate a JSON object describing a project idea based on user input, including a project name, description, 
+      suggested platforms, and a basic sprint task list with sprint tasks.
+      INPUT: ${content}.
+      EXAMPLE FORMAT: ${ExampleFormat}.
+      RULES:
+      1. Output must be a valid JSON object matching the EXAMPLE FORMAT exactly.
+      2. projectName: A clear, concise project name (e.g., "AI Vehicle Trading Platform").
+      3. description: A brief project concept in 1–2 sentences, suitable for undergraduates.
+      4. platforms: An array of 3–5 relevant platforms or websites (e.g., "GitHub", "W3Schools", "React").
+      5. timePlanner: An object with up to 7 key sprint tasks, each a short string describing a simple task (e.g., "Design UI", "Set up database").
+      6. sprint tasks should be ordered by dependency priority, with the most critical tasks first.
+      7. Use only simple, beginner-friendly platforms and tasks suitable for undergraduates.
+      8. Do not include fields like waterfall, agile, or any other fields outside the EXAMPLE FORMAT.
+      9. For description and sprint fields, use clear, concise language (no more than 20 words per field).
+      10. Do not overcomplicate the project idea or tasks—keep it achievable for undergraduates.
+      11. Output only the JSON object, with no additional commentary or markdown.
+      OUTPUT: Generate a JSON object adhering to the EXAMPLE FORMAT and RULES based on the provided input.
+        `;
+
+
+    try {
+      const geminiResponse = await geminiAPICall(prompt);
+
+      if (typeof geminiResponse === 'string') {
+        let parsed;
+        try {
+          // Remove ```json or ``` at start/end
+          const cleaned = geminiResponse
+            .trim()
+            .replace(/^```json\s*/, '')
+            .replace(/^```\s*/, '')
+            .replace(/```$/, '');
+
+          parsed = JSON.parse(cleaned);
+        } catch (err) {
+          console.error("Invalid JSON from Gemini:", geminiResponse);
+          return;
+        }
+
+        const newContent = {
+          id: Date.now().toString(),
+          type: 'gemini',
+          prompt: 'Gemini-generated content:',
+          content: parsed.projectName + `\n` + parsed.description + `\nPlatforms: ${parsed.platforms.join(', ')}`,
+          parsedContent: parsed,   // store parsed object separately for saving
+          createdAt: new Date(),
+        };
+
+        setGeneratedContent([newContent, ...generatedContent]);
+
+        // Construct idea object from parsed fields
+        const newIdea = {
+          id: Date.now().toString(),
+          idea_name: parsed.projectName,
+          description: parsed.description,
+          platform: parsed.platforms.join(', '),
+          status: 'finalized',
+          user_id: user?.uid || 'anonymous',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          tasks: parsed.timePlanner,
+          waterfall: [],
+          agile: [],
+        };
+
+
+        addIdea(newIdea);
+        console.log(newIdea)
+        setOutput(null);
+
+        console.log('Idea added successfully:', newIdea);
+
+      } else {
+        console.error('Gemini API call returned an error:', geminiResponse.error);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const geminiAPICall = async (content: string) => {
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to call Gemini API');
+      }
+
+      const data = await response.json();
+      console.log('Gemini API response:', data);
+      // You can now use data.generatedText to update your component state
+      return data.generatedText;
+    } catch (error) {
+      console.error('Error calling Gemini API:', error);
+      // Handle the error as needed
+      return { error: 'Failed to call Gemini API' };
     }
   };
 
@@ -98,10 +267,11 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
           </h2>
           <button className="closeButton" onClick={onClose}>&times;</button>
         </div>
+        
         <div className="content">
-          <p className="blockDescription text-center">
-            Fill out the form to receive a personalized undergraduate project idea and helpful resources.
-          </p>
+          <div>
+          
+          {(!output || !isIdeaGenerated) && (
           <div className="addForm">
             <div className="formGroup">
               <label className="label">1. What are your hobbies?</label>
@@ -160,7 +330,7 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
                 <option value="Advanced">Advanced</option>
               </select>
             </div>
-            
+
             <div className="formActions">
               <button
                 onClick={generateIdea}
@@ -170,8 +340,10 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
                 {isLoading ? 'Generating...' : 'Generate Idea'}
               </button>
             </div>
+            
           </div>
-          
+          )}
+
           {output && (
             <div className="addForm" style={{ marginTop: '1.5rem', display: 'block' }}>
               <h3 className="text-lg font-bold text-center" style={{ marginBottom: '1rem' }}>Generated Idea</h3>
@@ -183,6 +355,32 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
                 <h4 className="font-semibold" style={{ marginBottom: '0.5rem' }}>Helpful Platforms & Websites:</h4>
                 <p>{output.helpedPlatformsAndWebsites}</p>
               </div>
+              <button
+              onClick={() => promptGemini(lastPayload)}
+              className="generateButton"
+              title="Call Gemini"
+            >
+              Generate with Gemini
+            </button>
+            </div>
+            
+          )}
+
+          {(isIdeaGenerated && ideas.length > 0 && !output) && (
+            <div className="addForm" style={{ marginTop: '1.5rem', display: 'block' }}>
+              <h3 className="text-lg font-bold text-center" style={{ marginBottom: '1rem' }}>Generated Idea</h3>
+              <div className="blockContent" style={{ marginBottom: '1rem' }}>
+                <h4 className="font-semibold" style={{ marginBottom: '0.5rem' }}>Undergraduate Project:</h4>
+                <p>{ideas[ideas.length - 1].idea_name}</p>
+              </div>
+              <div className="blockContent">
+                <h4 className="font-semibold" style={{ marginBottom: '0.5rem' }}>Description:</h4>
+                <p>{ideas[ideas.length - 1].description}</p>
+              </div>
+              <div className="blockContent">
+                <h4 className="font-semibold" style={{ marginBottom: '0.5rem' }}>Helpful Platforms & Websites:</h4>
+                <p>{ideas[ideas.length - 1].platform}</p>
+              </div>
             </div>
           )}
 
@@ -191,6 +389,7 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
               <p>{error}</p>
             </div>
           )}
+        </div>
         </div>
       </div>
       <style jsx global>{`
@@ -372,6 +571,30 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
             grid-column: span 1;
           }
         }
+
+        .generateButton {
+          padding: 0.75rem 2rem;
+          background: var(--accent-blue);
+          color: white;
+          font-weight: 600;
+          border-radius: var(--radius-md);
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .generateButton:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 8px -2px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .generateButton:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
         
         .saveButton {
           padding: 0.75rem 2rem;
@@ -432,3 +655,4 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
 };
 
 export default IdeaGenerationNLP;
+
