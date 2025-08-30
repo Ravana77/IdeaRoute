@@ -26,16 +26,14 @@ const AuthPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
-  // Redirect if user is already authenticated
+  
   useEffect(() => {
     if (!loading && user) {
       router.push('/dashboard');
     }
   }, [user, loading, router]);
 
-  /**
-   * Handle input changes
-   */
+ 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -43,7 +41,7 @@ const AuthPage: React.FC = () => {
       [name]: value
     }));
     
-    // Clear errors for the field being edited
+   
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
@@ -52,15 +50,13 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  /**
-   * Handle form submission
-   */
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isSubmitting) return;
     
-    // Validate form and show inline errors
+  
     const validation = validateAuthForm(formData, mode === 'signup');
     if (!validation.isValid) {
       setErrors(validation.errors);
@@ -68,7 +64,7 @@ const AuthPage: React.FC = () => {
     }
     
     setIsSubmitting(true);
-    setErrors({}); // Clear any previous errors
+    setErrors({}); 
     
     try {
       if (mode === 'signup') {
@@ -77,9 +73,9 @@ const AuthPage: React.FC = () => {
         await signIn(formData.email, formData.password);
       }
       
-      // Redirect will happen automatically via useEffect
+      
     } catch (error: unknown) {
-      // Handle any remaining errors that weren't caught by AuthContext
+      
       console.error('Form submission error:', error);
       if (error instanceof Error) {
         setErrors({ general: error.message });
@@ -89,9 +85,7 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  /**
-   * Handle Google sign-in
-   */
+ 
   const handleGoogleSignIn = async () => {
     if (isGoogleSigningIn) return;
     
@@ -101,16 +95,14 @@ const AuthPage: React.FC = () => {
     try {
       await signInWithGoogle();
     } catch (error: unknown) {
-      // Errors are now handled by the AuthContext with notifications
+      
       console.error('Google sign-in error:', error);
     } finally {
       setIsGoogleSigningIn(false);
     }
   };
 
-  /**
-   * Handle password reset with professional modal (Big Tech style)
-   */
+  
   const handlePasswordReset = async () => {
     try {
       const modal = createModal(resetPassword);
@@ -124,9 +116,7 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  /**
-   * Toggle between sign-in and sign-up modes
-   */
+ 
   const toggleMode = () => {
     setMode(prev => prev === 'signin' ? 'signup' : 'signin');
     setErrors({});
@@ -138,7 +128,7 @@ const AuthPage: React.FC = () => {
     });
   };
 
-  // Show loading spinner while checking auth state
+  
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -148,7 +138,6 @@ const AuthPage: React.FC = () => {
     );
   }
 
-  // Don't render if user is authenticated (will redirect)
   if (user) {
     return null;
   }
@@ -197,9 +186,9 @@ const AuthPage: React.FC = () => {
           <span>or</span>
         </div>
 
-        {/* Email/Password Form */}
+        
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Display Name (Sign-up only) */}
+         
           {mode === 'signup' && (
             <div className={styles.inputGroup}>
               <label htmlFor="displayName" className={styles.label}>
@@ -221,7 +210,7 @@ const AuthPage: React.FC = () => {
             </div>
           )}
 
-          {/* Email */}
+          
           <div className={styles.inputGroup}>
             <label htmlFor="email" className={styles.label}>
               Email Address
@@ -242,7 +231,7 @@ const AuthPage: React.FC = () => {
             )}
           </div>
 
-          {/* Password */}
+         
           <div className={styles.inputGroup}>
             <label htmlFor="password" className={styles.label}>
               Password
@@ -273,7 +262,7 @@ const AuthPage: React.FC = () => {
             )}
           </div>
 
-          {/* Confirm Password (Sign-up only) */}
+          
           {mode === 'signup' && (
             <div className={styles.inputGroup}>
               <label htmlFor="confirmPassword" className={styles.label}>
@@ -306,14 +295,14 @@ const AuthPage: React.FC = () => {
             </div>
           )}
 
-          {/* General Error */}
+         
           {errors.general && (
             <div className={styles.generalError}>
               {errors.general}
             </div>
           )}
 
-          {/* Submit Button */}
+          
           <button
             type="submit"
             disabled={isSubmitting}
@@ -326,7 +315,7 @@ const AuthPage: React.FC = () => {
             )}
           </button>
 
-          {/* Forgot Password (Sign-in only) */}
+        
           {mode === 'signin' && (
             <button
               type="button"
@@ -339,7 +328,7 @@ const AuthPage: React.FC = () => {
           )}
         </form>
 
-        {/* Toggle Mode */}
+      
         <div className={styles.footer}>
           <span>
             {mode === 'signin' ? "Don't have an account?" : "Already have an account?"}

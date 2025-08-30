@@ -161,7 +161,7 @@ const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
   const { showSuccess, showError } = useNotifications();
   
 
-  // Load items from localStorage on component mount
+ 
   useEffect(() => {
     const savedItems = localStorage.getItem('qa-checklist-items');
     const savedNotes = localStorage.getItem('qa-checklist-notes');
@@ -181,7 +181,7 @@ const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
     }
   }, []);
 
-  // Save items to localStorage whenever items change
+  
   useEffect(() => {
     localStorage.setItem('qa-checklist-items', JSON.stringify(items));
     localStorage.setItem('qa-checklist-notes', notes);
@@ -200,7 +200,7 @@ const loadChecklist = async () => {
         setItems(savedChecklist.items);
         setNotes(savedChecklist.notes);
       } else {
-        // Fallback to localStorage if no Firestore data
+        
         const savedItems = localStorage.getItem('qa-checklist-items');
         const savedNotes = localStorage.getItem('qa-checklist-notes');
         if (savedItems) {
@@ -220,7 +220,7 @@ const loadChecklist = async () => {
       }
     } catch (error) {
       console.error('Error loading checklist:', error);
-      // Fallback to localStorage
+    
       const savedItems = localStorage.getItem('qa-checklist-items');
       const savedNotes = localStorage.getItem('qa-checklist-notes');
       if (savedItems) {
@@ -272,7 +272,7 @@ const loadChecklist = async () => {
   const autoSaveChecklist = async () => {
     if (!user) return;
     
-    // Auto-save every 30 seconds when user is active
+   
     try {
       const checklistData = {
         items,
@@ -298,7 +298,7 @@ const loadChecklist = async () => {
     return () => clearInterval(autoSaveInterval);
   }, [user, items, notes]);
 
-  // Save to localStorage as backup
+ 
   useEffect(() => {
     localStorage.setItem('qa-checklist-items', JSON.stringify(items));
     localStorage.setItem('qa-checklist-notes', notes);

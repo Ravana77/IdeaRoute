@@ -42,7 +42,7 @@ const ProfileSettings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Initialize form data when user loads
+  
   useEffect(() => {
     if (user) {
       const displayName = user.displayName || '';
@@ -61,7 +61,7 @@ const ProfileSettings: React.FC = () => {
     }
   }, [user]);
 
-  // Check for changes
+
   useEffect(() => {
     const changed = JSON.stringify(formData) !== JSON.stringify(originalData);
     setHasChanges(changed);
@@ -70,7 +70,7 @@ const ProfileSettings: React.FC = () => {
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
 
-    // Validate first name
+   
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     } else if (formData.firstName.trim().length < 2) {
@@ -79,7 +79,7 @@ const ProfileSettings: React.FC = () => {
       newErrors.firstName = 'First name must be less than 30 characters';
     }
 
-    // Validate last name
+   
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     } else if (formData.lastName.trim().length < 2) {
@@ -88,7 +88,7 @@ const ProfileSettings: React.FC = () => {
       newErrors.lastName = 'Last name must be less than 30 characters';
     }
 
-    // Validate email
+    
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!validateEmail(formData.email)) {
@@ -104,7 +104,7 @@ const ProfileSettings: React.FC = () => {
       [field]: sanitizeInput(value)
     }));
     
-    // Clear error for this field when user starts typing
+    
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -133,7 +133,7 @@ const ProfileSettings: React.FC = () => {
       const newDisplayName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
       const emailChanged = formData.email !== originalData.email;
 
-      // Show loading notification
+      
       notifications.showLoading(
         'Updating Profile',
         'Please wait while we save your changes...'
@@ -141,7 +141,7 @@ const ProfileSettings: React.FC = () => {
 
       let currentPassword: string | undefined;
 
-      // If email changed, get password confirmation
+      
       if (emailChanged) {
         const result = await Swal.fire({
           title: 'Confirm Password',
@@ -167,20 +167,19 @@ const ProfileSettings: React.FC = () => {
         if (result.isConfirmed && result.value) {
           currentPassword = result.value;
         } else {
-          // User cancelled, revert email change
+         
           setFormData(prev => ({ ...prev, email: originalData.email }));
           notifications.closeAlert();
           return;
         }
       }
 
-      // Use the centralized update method
       await updateUserProfile({
         displayName: newDisplayName,
         email: emailChanged ? formData.email : undefined
       }, currentPassword);
 
-      // Update original data to reflect saved state
+     
       setOriginalData({ ...formData });
       
       notifications.closeAlert();
@@ -216,7 +215,7 @@ const ProfileSettings: React.FC = () => {
     if (!user) return;
 
     try {
-      // First confirmation
+     
       const firstConfirm = await Swal.fire({
         title: '⚠️ Delete Account?',
         text: 'This action cannot be undone. All your data will be permanently deleted.',
@@ -237,7 +236,7 @@ const ProfileSettings: React.FC = () => {
 
       if (!firstConfirm.isConfirmed) return;
 
-      // Second confirmation with password
+    
       const passwordConfirm = await Swal.fire({
         title: 'Confirm Account Deletion',
         html: `
@@ -275,7 +274,7 @@ const ProfileSettings: React.FC = () => {
 
       if (!passwordConfirm.isConfirmed) return;
 
-      // Final confirmation with typing "DELETE"
+      
       const finalConfirm = await Swal.fire({
         title: 'Final Confirmation',
         text: 'Type "DELETE" to permanently delete your account:',
@@ -306,18 +305,18 @@ const ProfileSettings: React.FC = () => {
 
       if (!finalConfirm.isConfirmed) return;
 
-      // Show deleting progress
+    
       notifications.showLoading(
         'Deleting Account',
         'Please wait while we delete your account and all associated data...'
       );
 
-      // Use the centralized delete method
+      
       await deleteUserAccount(passwordConfirm.value);
 
       notifications.closeAlert();
       
-      // Show success and redirect
+     
       await Swal.fire({
         title: 'Account Deleted',
         text: 'Your account has been permanently deleted. We\'re sorry to see you go.',
@@ -332,7 +331,7 @@ const ProfileSettings: React.FC = () => {
         }
       });
 
-      // Redirect to home page
+      
       window.location.href = '/';
 
     } catch (error: any) {
@@ -509,7 +508,7 @@ const ProfileSettings: React.FC = () => {
                 variant="secondary"
                 size="sm"
                 onClick={() => {
-                  // Navigate to password reset
+                 
                   window.location.href = '/reset-password';
                 }}
               >
@@ -535,7 +534,7 @@ const ProfileSettings: React.FC = () => {
                   variant="secondary"
                   size="sm"
                   onClick={() => {
-                    // TODO: Implement email verification resend
+                   
                     notifications.showInfo('Email Verification', 'Feature coming soon!');
                   }}
                 >

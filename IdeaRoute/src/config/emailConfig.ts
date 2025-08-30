@@ -18,7 +18,7 @@ export const passwordResetEmailConfig = {
   dynamicLinkDomain: 'yourdomain.page.link'
 };
 
-// Email verification configuration
+
 export const emailVerificationConfig = {
   url: process.env.NEXT_PUBLIC_BASE_URL 
     ? `${process.env.NEXT_PUBLIC_BASE_URL}/auth?verified=true`

@@ -28,7 +28,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     if (!ideas || ideas.length === 0) console.warn('No ideas loaded');
   }, [ideas, user]);
 
-  // Generates the phases and tasks for the Waterfall project management method.
+
   const generateWaterfall = () => {
     const idea = ideas[ideas.length - 1];
     const rawPercentages = [0.1, 0.15, 0.45, 0.2, 0.1];
@@ -43,18 +43,18 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     if (timeValue !== '') {
       const totalDays = convertToDays(Number(timeValue), timeUnit);
 
-      // 1. initial allocation in days (float)
+    
       const allocated = rawPercentages.map(p => totalDays * p);
 
-      // 2. round to whole days
+     
       let rounded = allocated.map(a => Math.max(Math.round(a), 1));
 
-      // 3. adjust to match total exactly
+      
       let diff = totalDays - rounded.reduce((a, b) => a + b, 0);
 
-      // add/subtract diff from largest phase (usually Development)
+      
       if (diff !== 0) {
-        const devIndex = 2; // Development phase index
+        const devIndex = 2; 
         rounded[devIndex] += diff;
       }
 
@@ -66,21 +66,21 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     setPhases(phases);
   };
 
-  // Converts the input duration to days based on the selected unit.
+ 
   const convertToDays = (value: number, unit: 'days' | 'weeks' | 'months') => {
     if (unit === 'days') return value;
     if (unit === 'weeks') return value * 7;
     return value * 30;
   };
 
-  // Returns a readable string for the number of days (e.g., "2 weeks", "1 month").
+  
   const readableDays = (days: number) => {
     if (days >= 30) return `${Math.round(days / 30)} months`;
     if (days >= 7) return `${Math.round(days / 7)} weeks`;
     return `${days} days`;
   };
 
-  // Generates the phases and tasks for the Agile project management method.
+  
   const generateAgile = () => {
     console.log(ideas);
     const idea = ideas[ideas.length - 1];
@@ -132,7 +132,7 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
       });
     }
 
-    // optionally add leftover days to last sprint
+   
     if (remainder > 0 && phases.length > 0) {
       phases[phases.length - 1].name += ` (+${readableDays(remainder)})`;
     }
@@ -140,15 +140,15 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     setPhases(phases);
   };
 
-  // Converts a duration value and unit to a readable string (e.g., "3 weeks").
+ 
   const convertDuration = (value: number, unit: 'days' | 'weeks' | 'months'): string => {
     let days = 0;
 
     if (unit === 'days') days = value;
     if (unit === 'weeks') days = value * 7;
-    if (unit === 'months') days = value * 30; // rough month = 30 days
+    if (unit === 'months') days = value * 30; 
 
-    // Minimal unit = days
+    
     if (days < 1) days = 1;
 
     if (days >= 30) {
@@ -162,31 +162,31 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     }
   };
 
-  // Calculates the number of sprints and their length for Agile planning.
+
   const getAgileSprints = (
     totalTime: number,
     unit: 'days' | 'weeks' | 'months',
     devTaskCount: number,
-    maxSprints = 30 // lock max sprints
+    maxSprints = 30
   ) => {
     const totalDays = convertToDays(totalTime, unit);
 
-    const minSprintLength = 1;   // min 1 day per sprint
+    const minSprintLength = 1; 
 
-    // minimal sprints: Planning + 1 dev + Testing + Deployment
+    
     let sprintCount = 4;
     let devSprints = 1;
 
-    // reserve min days for Planning, Testing, Deployment
+   
     const remainingDays = totalDays - 3 * minSprintLength;
 
-    // cannot have more dev sprints than days or tasks
+    
     devSprints = Math.min(devTaskCount, remainingDays);
     if (devSprints < 1) devSprints = 1;
 
     sprintCount = devSprints + 3;
 
-    // lock total sprint count to maxSprints
+    
     if (sprintCount > maxSprints) {
       devSprints = maxSprints - 3;
       sprintCount = maxSprints;
@@ -199,11 +199,6 @@ const TimePlanner: React.FC<TimePlannerProps> = ({ onClose }) => {
     return { sprintCount, sprintLength, remainder, devSprints };
   };
 
-
-
-
-
-  // Handles tab switching between Waterfall and Agile, and triggers generation.
   const handleTabClick = (tab: 'waterfall' | 'agile') => {
     setActiveTab(tab);
     if (tab === 'waterfall') generateWaterfall();

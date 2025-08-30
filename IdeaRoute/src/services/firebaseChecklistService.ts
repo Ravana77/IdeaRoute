@@ -23,7 +23,7 @@ export interface ChecklistData {
 }
 
 export const checklistService = {
-  // Save or update checklist for user
+ 
   async saveChecklist(userId: string, checklistData: Omit<ChecklistData, 'user_id'>): Promise<void> {
     if (!canUseFirestore()) {
       throw new Error('Firestore not available');
@@ -34,7 +34,7 @@ export const checklistService = {
       
       await setDoc(checklistRef, {
         ...checklistData,
-        user_id: userId, // This is crucial for security rules
+        user_id: userId, 
         updatedAt: serverTimestamp(),
         createdAt: serverTimestamp()
       }, { merge: true });
@@ -45,7 +45,7 @@ export const checklistService = {
     }
   },
 
-  // Get checklist for user
+ 
   async getChecklist(userId: string): Promise<ChecklistData | null> {
     if (!canUseFirestore()) {
       return null;
@@ -78,7 +78,7 @@ export const checklistService = {
     }
   },
 
-  // Delete checklist for user
+  
   async deleteChecklist(userId: string): Promise<void> {
     if (!canUseFirestore()) {
       throw new Error('Firestore not available');

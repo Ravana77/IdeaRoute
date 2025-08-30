@@ -1,13 +1,10 @@
-/* SweetAlert2 Dark Theme Styles for IdeaRoute */
 
-/* Default popup container - ensure dark background */
 .swal2-popup {
   background: #1f1f1f !important;
   color: #f8f8f8 !important;
   border: 1px solid #374151 !important;
 }
 
-/* Base popup styling - Fixed dimensions and mobile-friendly */
 .swal2-popup {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   border-radius: 12px !important;
@@ -15,7 +12,7 @@
   border: 1px solid #374151 !important;
   background: #1f1f1f !important;
   color: #f8f8f8 !important;
-  /* Fixed responsive dimensions */
+ 
   width: 90% !important;
   max-width: 400px !important;
   min-width: 280px !important;
@@ -27,7 +24,7 @@
   overflow: visible !important;
 }
 
-/* Title styling - compact and visible */
+
 .swal2-title {
   font-size: 1.125rem !important;
   font-weight: 600 !important;
@@ -40,7 +37,7 @@
   display: block !important;
 }
 
-/* Content styling - scrollable and responsive */
+
 .swal2-content,
 .swal2-html-container {
   font-size: 0.875rem !important;
@@ -55,7 +52,7 @@
   display: block !important;
 }
 
-/* Button actions container - prevent overflow */
+
 .swal2-actions {
   margin: 1rem 0 0 0 !important;
   padding: 0 !important;
@@ -65,7 +62,7 @@
   width: 100% !important;
 }
 
-/* Button styling - mobile-friendly */
+
 .swal2-button {
   font-size: 0.875rem !important;
   font-weight: 500 !important;
@@ -90,7 +87,7 @@
   transform: translateY(0) !important;
 }
 
-/* Confirm button */
+
 .swal2-confirm.swal2-responsive-button {
   background: #3b82f6 !important;
   color: white !important;
@@ -113,7 +110,7 @@
   color: #f8f8f8 !important;
 }
 
-/* Icon styling */
+
 .swal2-success-icon {
   border-color: #10b981 !important;
   color: #10b981 !important;

@@ -1,8 +1,8 @@
-// Application constants
+
 export const APP_NAME = 'IdeaRoute';
 export const APP_VERSION = '1.0.0';
 
-// Local storage keys
+
 export const STORAGE_KEYS = {
   CHECKLIST_ITEMS: 'checklist-items',
   TIME_PLANNER_BLOCKS: 'time-planner-blocks',
@@ -10,7 +10,7 @@ export const STORAGE_KEYS = {
   THEME: 'theme-preference'
 } as const;
 
-// Component categories for AI Generate
+
 export const AI_CONTENT_TYPES = [
   { value: 'idea', label: 'Business Idea', icon: '💡' },
   { value: 'content', label: 'Content Ideas', icon: '📝' },
@@ -20,7 +20,7 @@ export const AI_CONTENT_TYPES = [
   { value: 'creative', label: 'Creative Concept', icon: '🎨' }
 ] as const;
 
-// Time planner categories
+
 export const TIME_BLOCK_CATEGORIES = [
   { value: 'work', label: 'Work', color: '#3b82f6', icon: '💼' },
   { value: 'personal', label: 'Personal', color: '#10b981', icon: '👤' },
@@ -30,7 +30,7 @@ export const TIME_BLOCK_CATEGORIES = [
   { value: 'break', label: 'Break', color: '#6b7280', icon: '☕' }
 ] as const;
 
-// API endpoints (if needed in the future)
+
 export const API_ENDPOINTS = {
   AUTH: {
     SIGNIN: '/api/auth/signin',

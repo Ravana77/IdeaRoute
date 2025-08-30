@@ -2,12 +2,9 @@
 
 import Swal from 'sweetalert2';
 
-/**
- * Custom hook for SweetAlert2 notifications with responsive design
- * and consistent theming for authentication flows
- */
+
 export const useNotifications = () => {
-  // Base configuration for all alerts
+  
   const baseConfig = {
     confirmButtonColor: '#667eea',
     cancelButtonColor: '#e53e3e',
@@ -24,13 +21,13 @@ export const useNotifications = () => {
     allowOutsideClick: true,
     allowEscapeKey: true,
     showCloseButton: true,
-    timer: undefined, // Will be set per notification type
+    timer: undefined, 
     timerProgressBar: false,
     width: '90%',
     padding: '1.5rem'
   };
 
-  // Success notifications
+  
   const showSuccess = (title: string, message?: string, autoClose = true) => {
     return Swal.fire({
       ...baseConfig,
@@ -48,7 +45,7 @@ export const useNotifications = () => {
     });
   };
 
-  // Error notifications
+
   const showError = (title: string, message?: string, showRetry = false) => {
     const config = {
       ...baseConfig,
@@ -66,7 +63,7 @@ export const useNotifications = () => {
     return Swal.fire(config);
   };
 
-  // Warning notifications
+  
   const showWarning = (title: string, message?: string) => {
     return Swal.fire({
       ...baseConfig,
@@ -82,7 +79,7 @@ export const useNotifications = () => {
     });
   };
 
-  // Info notifications
+ 
   const showInfo = (title: string, message?: string, autoClose = true) => {
     return Swal.fire({
       ...baseConfig,
@@ -100,7 +97,7 @@ export const useNotifications = () => {
     });
   };
 
-  // Loading notification
+  
   const showLoading = (title: string, message?: string) => {
     return Swal.fire({
       ...baseConfig,
@@ -125,7 +122,7 @@ export const useNotifications = () => {
     });
   };
 
-  // Confirmation dialog
+
   const showConfirmation = (
     title: string,
     message?: string,
@@ -147,14 +144,14 @@ export const useNotifications = () => {
     });
   };
 
-  // Close any open alert
+
   const closeAlert = () => {
     Swal.close();
   };
 
-  // Authentication-specific notifications
+  
   const auth = {
-    // Sign up success
+   
     signUpSuccess: (name?: string) => showSuccess(
       'Welcome aboard! 🎉',
       name 
@@ -163,7 +160,7 @@ export const useNotifications = () => {
       true
     ),
 
-    // Sign in success
+   
     signInSuccess: (name?: string) => showSuccess(
       'Welcome back! 👋',
       name 
@@ -172,7 +169,7 @@ export const useNotifications = () => {
       true
     ),
 
-    // Google OAuth success
+   
     googleSignInSuccess: (name?: string) => showSuccess(
       'Google Sign-in Successful! ✨',
       name 
@@ -181,37 +178,37 @@ export const useNotifications = () => {
       true
     ),
 
-    // Password reset sent
+    
     passwordResetSent: (email: string) => showInfo(
       'Password Reset Email Sent 📧',
       `We've sent a password reset link to ${email}. Please check your inbox (and spam folder) and click the link to reset your password. The link will expire in 1 hour for security.`,
       false
     ),
 
-    // Sign out success
+   
     signOutSuccess: () => showSuccess(
       'Signed Out Successfully 👋',
       'You have been safely signed out. See you soon!',
       true
     ),
 
-    // Error notifications
+    
     errors: {
-      // Email already in use
+      
       emailInUse: () => showError(
         'Email Already Registered 📧',
         'An account with this email already exists. Try signing in instead or use a different email.',
         true
       ),
 
-      // Invalid email
+      
       invalidEmail: () => showError(
         'Invalid Email Address ❌',
         'Please enter a valid email address and try again.',
         true
       ),
 
-      // Weak password
+      
       weakPassword: () => showError(
         'Password Too Weak 🔒',
         'Your password should be at least 6 characters long with a mix of letters, numbers, and symbols.',
@@ -225,47 +222,47 @@ export const useNotifications = () => {
         true
       ),
 
-      // User not found
+      
       userNotFound: () => showError(
         'Account Not Found 👤',
         'No account found with this email. Please check your email or create a new account.',
         true
       ),
 
-      // Google popup closed
+      
       googlePopupClosed: () => showWarning(
         'Sign-in Cancelled 🚫',
         'Google sign-in was cancelled. Click "Continue with Google" to try again.'
       ),
 
-      // Google popup blocked
+     
       googlePopupBlocked: () => showWarning(
         'Popup Blocked 🚫',
         'Your browser blocked the Google sign-in popup. We\'ll redirect you to Google instead.'
       ),
 
-      // Account exists with different provider
+      
       accountExistsWithDifferentCredential: () => showError(
         'Account Already Exists 🔄',
         'An account with this email already exists using a different sign-in method. Try signing in with email/password instead.',
         true
       ),
 
-      // Too many requests
+      
       tooManyRequests: () => showError(
         'Too Many Attempts 🚫',
         'Too many failed attempts. Please wait a few minutes before trying again.',
         false
       ),
 
-      // Network error
+     
       networkError: () => showError(
         'Connection Error 🌐',
         'Unable to connect to our servers. Please check your internet connection and try again.',
         true
       ),
 
-      // Generic authentication error
+     
       authError: (message?: string) => showError(
         'Authentication Error ❌',
         message || 'Something went wrong during authentication. Please try again.',
@@ -273,7 +270,7 @@ export const useNotifications = () => {
       )
     },
 
-    // Loading states
+    
     loading: {
       signIn: () => showLoading(
         'Signing In...',

@@ -19,8 +19,8 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Remove all connection testing and debug code
-export const canUseFirestore = () => true; // Just assume it works
+
+export const canUseFirestore = () => true;
 
 let analytics: ReturnType<typeof getAnalytics> | null = null;
 if (typeof window !== 'undefined') {

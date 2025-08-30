@@ -25,7 +25,7 @@ body {
   min-height: 100vh;
 }
 
-/* Ensure Next.js root elements have dark background */
+
 #__next,
 #__next > div {
   width: 100%;
@@ -34,19 +34,19 @@ body {
   height: 100%;
 }
 
-/* Override any potential loading states */
+
 div[data-nextjs-router] {
   background-color: #151515 !important;
 }
 
-/* Ensure all main containers have dark background */
+
 main, 
 .main,
 [role="main"] {
   background-color: #151515;
 }
 
-/* Override any loading screens or overlays */
+
 div[class*="loading"],
 div[class*="spinner"],
 div[class*="Loading"],
@@ -54,7 +54,7 @@ div[class*="Spinner"] {
   background-color: #151515 !important;
 }
 
-/* Ensure any full-screen overlays are dark */
+
 .overlay,
 [class*="overlay"],
 [class*="Overlay"] {
@@ -89,15 +89,15 @@ div[class*="Spinner"] {
   --bg-tertiary: #2a2a2a;
   --bg-accent: #f8f8f8;
   
-  /* Background aliases */
+  
   --background-color: #151515;
   --background-secondary: #1f1f1f;
   
-  /* Surface colors */
+ 
   --surface-color: #1f1f1f;
   --surface-secondary: #2a2a2a;
   
-  /* Hover color */
+  
   --hover-color: #374151;
   --bg-hover: #374151;
   --border-hover: #4b5563;
@@ -186,7 +186,7 @@ button {
   cursor: pointer;
 }
 
-/* Focus styles for accessibility */
+
 *:focus-visible {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;

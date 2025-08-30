@@ -14,14 +14,14 @@ import { db, canUseFirestore } from '../lib/firebase';
 import { Idea } from '@/types/idea';
 
 export const firebaseService = {
-  // Save idea to Firestore
+  
   async saveIdea(idea: Idea): Promise<string> {
     if (!canUseFirestore()) {
       throw new Error('Firestore not available');
     }
 
     try {
-      // Remove the id field since Firestore will auto-generate it
+    
       const { id, ...ideaWithoutId } = idea;
 
       const docRef = await addDoc(collection(db, 'ideas'), {
@@ -36,7 +36,7 @@ export const firebaseService = {
     }
   },
 
-  // Update idea in Firestore
+
   async updateIdea(id: string, updatedIdea: Partial<Idea>): Promise<void> {
     if (!canUseFirestore()) {
       throw new Error('Firestore not available');
@@ -54,7 +54,7 @@ export const firebaseService = {
     }
   },
 
-  // Delete idea from Firestore
+  
   async deleteIdea(id: string): Promise<void> {
     if (!canUseFirestore()) {
       throw new Error('Firestore not available');
@@ -69,7 +69,7 @@ export const firebaseService = {
     }
   },
 
-  // Get all ideas for a user
+ 
   async getUserIdeas(userId: string): Promise<Idea[]> {
     if (!canUseFirestore()) {
       throw new Error('Firestore not available');

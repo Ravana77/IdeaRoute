@@ -1,6 +1,4 @@
-/* Time Planner Modal Styles - Enhanced UI with Idea Generation NLP */
 
-/* Base Modal Styles */
 .overlay {
   position: fixed;
   top: 0;
@@ -46,7 +44,7 @@
   z-index: -1;
 }
 
-/* Header Styles */
+
 .header {
   display: flex;
   align-items: center;
@@ -101,7 +99,7 @@
   color: #ffffff;
 }
 
-/* Tab Navigation */
+
 .tabs {
   display: flex;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -141,7 +139,7 @@
   border-radius: 2px 2px 0 0;
 }
 
-/* Content Area */
+
 .content {
   flex: 1;
   overflow-y: auto;
@@ -154,7 +152,7 @@
   -webkit-backdrop-filter: blur(20px);
 }
 
-/* Controls Section */
+
 .controls {
   display: flex;
   align-items: center;
@@ -193,7 +191,7 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-/* Stats Cards */
+
 .stats {
   display: flex;
   gap: 1rem;
@@ -221,7 +219,7 @@
   font-weight: 500;
 }
 
-/* Buttons */
+
 .addButton {
   padding: 0.75rem 1.25rem;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
@@ -247,7 +245,7 @@
   font-size: 1.25rem;
 }
 
-/* Form Styles - MERGED with Idea Generation styles */
+
 .addForm {
   background: rgba(22, 22, 34, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -320,7 +318,7 @@
   opacity: 0.7;
 }
 
-/* Tag Input Styles - NEW from Idea Generation */
+
 .tagInputContainer {
   display: flex;
   flex-wrap: wrap;

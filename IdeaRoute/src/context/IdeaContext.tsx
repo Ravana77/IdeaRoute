@@ -19,7 +19,7 @@ export const IdeaProvider: React.FC<IdeaProviderProps> = ({ children }) => {
     const { showSuccess, showError, showWarning } = useNotifications();
     const { user } = useAuth();
 
-    // Load ideas from Firestore when user changes
+ 
     useEffect(() => {
         loadIdeas();
     }, [user]);
@@ -39,7 +39,7 @@ export const IdeaProvider: React.FC<IdeaProviderProps> = ({ children }) => {
             console.error('Error loading ideas from Firestore:', err);
             setError('Failed to load ideas');
             showError('Error', 'Failed to load ideas from server');
-            setIdeas([]); // Set empty array instead of trying localStorage
+            setIdeas([]);
         } finally {
             setLoading(false);
         }
@@ -55,16 +55,16 @@ export const IdeaProvider: React.FC<IdeaProviderProps> = ({ children }) => {
         try {
             const newIdea: Idea = {
                 ...ideaData,
-                id: '', // Firestore will generate ID
+                id: '', 
                 user_id: user.uid,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             };
 
-            // Save to Firestore
+            
             const firestoreId = await firebaseService.saveIdea(newIdea);
             
-            // Update with Firestore ID
+            
             const savedIdea: Idea = {
                 ...newIdea,
                 id: firestoreId
@@ -84,10 +84,10 @@ export const IdeaProvider: React.FC<IdeaProviderProps> = ({ children }) => {
     const updateIdea = useCallback(async (id: string, updatedIdea: Partial<Idea>) => {
         setLoading(true);
         try {
-            // Update in Firestore
+            
             await firebaseService.updateIdea(id, updatedIdea);
 
-            // Update local state
+         
             setIdeas(prev => prev.map(idea =>
                 idea.id === id
                     ? { ...idea, ...updatedIdea, updatedAt: new Date() }
@@ -114,10 +114,10 @@ export const IdeaProvider: React.FC<IdeaProviderProps> = ({ children }) => {
             if (result.isConfirmed) {
                 setLoading(true);
                 try {
-                    // Delete from Firestore
+                   
                     await firebaseService.deleteIdea(id);
 
-                    // Update local state
+                   
                     setIdeas(prev => prev.filter(idea => idea.id !== id));
                     showSuccess('Success', 'Idea deleted successfully!');
                 } catch (err) {

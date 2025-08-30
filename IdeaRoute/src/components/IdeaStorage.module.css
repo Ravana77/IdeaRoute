@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* Modal Overlay */
+
 .overlay {
   position: fixed;
   top: 0;
@@ -41,7 +41,7 @@
   50% { opacity: 0.7; transform: scale(1.1); }
 }
 
-/* Enhanced Modal */
+
 .modal {
   background: rgba(22, 22, 34, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -83,7 +83,7 @@
   }
 }
 
-/* Enhanced Header */
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -359,7 +359,7 @@
   transform: scale(1.1);
 }
 
-/* Suggestions */
+
 .relative {
   position: relative;
 }
@@ -444,7 +444,7 @@
   transform: translateX(4px);
 }
 
-/* Form Actions */
+
 .formActions {
   display: flex;
   gap: 1rem;
@@ -510,7 +510,7 @@
   box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
 }
 
-/* Content Blocks */
+
 .blockContent {
   background: rgba(30, 30, 46, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -609,7 +609,7 @@
   border-radius: 12px;
 }
 
-/* Loading Container */
+
 .loadingContainer {
   min-height: 100vh;
   display: flex;
