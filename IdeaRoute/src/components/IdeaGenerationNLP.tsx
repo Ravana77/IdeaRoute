@@ -543,7 +543,7 @@ const IdeaGenerationNLP: React.FC<IdeaGenerationNLPProps> = ({ onClose }) => {
                     className={styles.saveButton}
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Generating...' : 'Generate from Dataset'}
+                    {isLoading ? 'Generating...' : 'Generate Idea'}
                   </button>
                 </div>
               </div>
