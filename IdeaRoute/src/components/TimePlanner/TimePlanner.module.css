@@ -1,4 +1,4 @@
-/* Time Planner Modal Styles - Enhanced UI */
+
 
 :root {
   --accent-orange: #f59e0b;
@@ -26,7 +26,7 @@
   --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Dark mode support */
+
 @media (prefers-color-scheme: dark) {
   :root {
     --surface-color: #1e293b;
@@ -41,7 +41,7 @@
   }
 }
 
-/* Base Modal Styles */
+
 .overlay {
   position: fixed;
   top: 0;
@@ -71,7 +71,7 @@
   transition: all 0.3s ease;
 }
 
-/* Header Styles */
+
 .header {
   display: flex;
   align-items: center;
@@ -120,7 +120,7 @@
   color: var(--text-primary);
 }
 
-/* Tab Navigation */
+
 .tabs {
   display: flex;
   border-bottom: 1px solid var(--border-color);
@@ -158,7 +158,7 @@
   border-radius: 2px 2px 0 0;
 }
 
-/* Content Area */
+
 .content {
   flex: 1;
   overflow-y: auto;
@@ -168,7 +168,7 @@
   gap: 1.5rem;
 }
 
-/* Controls Section */
+
 .controls {
   display: flex;
   align-items: center;
@@ -372,7 +372,7 @@
   cursor: not-allowed;
 }
 
-/* Time Blocks Section */
+
 .blocksSection {
   flex: 1;
 }

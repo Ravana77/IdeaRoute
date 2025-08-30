@@ -24,7 +24,7 @@ const Button: React.FC<ButtonProps> = ({
     isLoading && styles.loading,
     className
   ].filter(Boolean).join(' ');
-
+/*Button component */ 
   return (
     <button
       className={baseClasses}

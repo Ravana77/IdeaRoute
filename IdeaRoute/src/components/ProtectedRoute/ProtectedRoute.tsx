@@ -23,7 +23,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [user, loading, router, redirectTo]);
 
-  // Show loading while checking auth state
+ 
   if (loading) {
     return (
       <div style={{
@@ -56,7 +56,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Don't render children if not authenticated (will redirect)
+
   if (!user) {
     return null;
   }

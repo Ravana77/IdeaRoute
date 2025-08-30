@@ -14,7 +14,7 @@ const DashboardPage: React.FC = () => {
   const router = useRouter();
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
-  // Redirect to auth if not authenticated
+ 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/auth');
@@ -23,7 +23,7 @@ const DashboardPage: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      // Show confirmation dialog
+    
       const result = await Swal.fire({
         title: 'Sign Out',
         text: 'Are you sure you want to sign out of your account?',
@@ -45,7 +45,7 @@ const DashboardPage: React.FC = () => {
       });
 
       if (result.isConfirmed) {
-        // Show loading state while signing out
+        
         Swal.fire({
           title: 'Signing Out...',
           text: 'Please wait while we sign you out.',
@@ -62,13 +62,13 @@ const DashboardPage: React.FC = () => {
 
         await signOut();
         
-        // Redirect to auth page (success message is handled by AuthContext)
+       
         router.push('/auth');
       }
     } catch (error) {
       console.error('Error signing out:', error);
       
-      // Show error message
+    
       Swal.fire({
         title: 'Sign Out Failed',
         text: 'There was an error signing you out. Please try again.',
@@ -85,7 +85,7 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  // Show loading while checking auth state
+ 
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -95,7 +95,7 @@ const DashboardPage: React.FC = () => {
     );
   }
 
-  // Don't render if not authenticated (will redirect)
+  
   if (!user) {
     return null;
   }

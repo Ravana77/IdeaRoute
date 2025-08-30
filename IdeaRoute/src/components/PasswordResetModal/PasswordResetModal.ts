@@ -1,15 +1,3 @@
-/**
- * Production-Level Password Reset Modal Component
- * Inspired by big tech companies' UX patterns (Google, GitHub, Microsoft)
- * 
- * Features:
- * - Real-time email validation
- * - Professional error handling
- * - Rate limiting with visual feedback
- * - Security-focused messaging
- * - Progressive enhancement
- */
-
 'use client';
 
 import Swal from 'sweetalert2';
@@ -33,9 +21,7 @@ export class PasswordResetModal {
     this.options = options;
   }
 
-  /**
-   * Show the password reset modal with progressive enhancement
-   */
+  
   public async show(): Promise<PasswordResetModalResult> {
     let email = '';
     let isValidEmail = false;
@@ -75,7 +61,7 @@ export class PasswordResetModal {
           successMessage = success;
           cooldownTime = cooldown;
           
-          // Update confirm button state
+          
           const confirmBtn = popup.querySelector('.swal2-confirm') as HTMLButtonElement;
           if (confirmBtn) {
             confirmBtn.disabled = !isValidEmail || isLoading || cooldownTime > 0;
@@ -91,9 +77,7 @@ export class PasswordResetModal {
     };
   }
 
-  /**
-   * Generate the modal HTML content
-   */
+ 
   private getModalHTML(
     email: string, 
     isValid: boolean, 
@@ -299,9 +283,7 @@ export class PasswordResetModal {
     `;
   }
 
-  /**
-   * Setup modal interactions and real-time validation
-   */
+  
   private setupModalInteractions(
     popup: HTMLElement,
     onStateChange: (email: string, isValid: boolean, isLoading: boolean, error: string, success: string, cooldown: number) => void
@@ -310,7 +292,7 @@ export class PasswordResetModal {
     
     if (!emailInput) return;
 
-    // Real-time email validation
+   
     const validateAndUpdate = () => {
       const email = emailInput.value.trim();
       const isValid = validateEmail(email);
@@ -320,64 +302,56 @@ export class PasswordResetModal {
         error = 'Please enter a valid email address';
       }
       
-      // Check cooldown
+     
       const cooldown = this.getCooldownTime(email);
       
       onStateChange(email, isValid, false, error, '', cooldown);
       this.updateModalContent(popup, email, isValid, false, error, '', cooldown);
     };
 
-    // Input event listeners
+   
     emailInput.addEventListener('input', validateAndUpdate);
     emailInput.addEventListener('blur', validateAndUpdate);
     
-    // Focus the input
+   
     setTimeout(() => emailInput.focus(), 100);
     
-    // Setup cooldown timer if needed
+    
     const initialCooldown = this.getCooldownTime(emailInput.value);
     if (initialCooldown > 0) {
       this.startCooldownTimer(popup, emailInput.value, onStateChange);
     }
   }
 
-  /**
-   * Handle password reset with enhanced validation and user existence check
-   */
+  
   private async handlePasswordReset(email: string): Promise<boolean> {
     try {
-      // Check rate limiting
+      
       if (this.getCooldownTime(email) > 0) {
         throw new Error('Please wait before requesting another reset email');
       }
 
-      // Set rate limit (60 seconds)
+      
       this.setCooldown(email, 60);
 
-      // Send the password reset email
-      // Firebase will handle this gracefully - if user doesn't exist, no email is sent
-      // but no error is thrown (this prevents email enumeration attacks)
+      
       await this.options.onPasswordReset(email);
 
       return true;
     } catch (error) {
       console.error('Password reset error:', error);
-      // Show error in the modal instead of throwing
+     
       Swal.showValidationMessage((error as Error).message);
       return false;
     }
   }
 
-  /**
-   * Get spinner HTML
-   */
+ 
   private getSpinnerHTML(): string {
     return '<div class="spinner"></div>';
   }
 
-  /**
-   * Get confirm button text based on state
-   */
+  
   private getConfirmButtonText(isLoading: boolean, cooldown: number, success: string): string {
     if (isLoading) {
       return '<div class="spinner"></div> Sending...';
@@ -391,9 +365,7 @@ export class PasswordResetModal {
     return 'Send Reset Link';
   }
 
-  /**
-   * Update modal content dynamically
-   */
+  
   private updateModalContent(
     popup: HTMLElement,
     email: string,
@@ -416,9 +388,7 @@ export class PasswordResetModal {
     }
   }
 
-  /**
-   * Rate limiting helpers
-   */
+ 
   private setCooldown(email: string, seconds: number): void {
     this.cooldownTimers.set(email, Date.now() + (seconds * 1000));
   }
@@ -451,9 +421,7 @@ export class PasswordResetModal {
   }
 }
 
-/**
- * Hook for using the password reset modal
- */
+
 export const usePasswordResetModal = () => {
   const createModal = (
     onPasswordReset: (email: string) => Promise<void>,

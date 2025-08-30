@@ -28,7 +28,7 @@ const ResetPasswordContent: React.FC = () => {
     general?: string;
   }>({});
 
-  // Verify the reset code when component mounts
+ 
   useEffect(() => {
     const verifyCode = async () => {
       const oobCode = searchParams.get('oobCode');
@@ -46,7 +46,7 @@ const ResetPasswordContent: React.FC = () => {
       try {
         setActionCode(oobCode);
         
-        // Verify the code and get associated email
+       
         const userEmail = await verifyPasswordResetCode(auth, oobCode);
         setEmail(userEmail);
         setIsValidCode(true);
@@ -82,38 +82,34 @@ const ResetPasswordContent: React.FC = () => {
     verifyCode();
   }, [searchParams, notifications, router]);
 
-  /**
-   * Handle input changes with real-time validation
-   */
+ 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
     if (name === 'newPassword') {
       setNewPassword(value);
       
-      // Clear password error when user starts typing
+      
       if (errors.password) {
         setErrors(prev => ({ ...prev, password: undefined }));
       }
     } else if (name === 'confirmPassword') {
       setConfirmPassword(value);
       
-      // Clear confirm password error when user starts typing
+     
       if (errors.confirmPassword) {
         setErrors(prev => ({ ...prev, confirmPassword: undefined }));
       }
     }
   };
 
-  /**
-   * Handle password reset form submission
-   */
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isSubmitting) return;
     
-    // Validate passwords
+
     const passwordValidation = validatePassword(newPassword);
     const newErrors: typeof errors = {};
     
@@ -134,17 +130,17 @@ const ResetPasswordContent: React.FC = () => {
     setErrors({});
     
     try {
-      // Reset the password using Firebase
+      
       await confirmPasswordReset(auth, actionCode, newPassword);
       
-      // Show success notification
+     
       await notifications.showSuccess(
         'Password Reset Successfully! 🎉',
         'Your password has been updated. You can now sign in with your new password.',
         false
       );
       
-      // Redirect to sign-in page
+      
       router.push('/auth');
       
     } catch (error: unknown) {
@@ -177,7 +173,7 @@ const ResetPasswordContent: React.FC = () => {
     }
   };
 
-  // Show loading state while verifying code
+ 
   if (isVerifying) {
     return (
       <div className={styles.container}>
@@ -192,7 +188,7 @@ const ResetPasswordContent: React.FC = () => {
     );
   }
 
-  // Show error state if code is invalid
+  
   if (!isValidCode) {
     return (
       <div className={styles.container}>

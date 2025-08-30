@@ -21,9 +21,7 @@ class AuthErrorLogger {
     return AuthErrorLogger.instance;
   }
 
-  /**
-   * Log authentication errors for monitoring (production-safe)
-   */
+  
   logAuthError(
     action: string,
     error: any,
@@ -45,18 +43,16 @@ class AuthErrorLogger {
 
     this.addToQueue(errorLog);
     
-    // Log to console in development
+    
     if (process.env.NODE_ENV === 'development') {
       console.error(`[AUTH_ERROR] ${action}:`, errorLog);
     }
 
-    // In production, you would send to your logging service
+    
     this.sendToLoggingService(errorLog);
   }
 
-  /**
-   * Log successful authentication events for analytics
-   */
+
   logAuthSuccess(action: string, userId?: string, metadata?: Record<string, any>): void {
     if (typeof window === 'undefined') return;
 
@@ -69,18 +65,16 @@ class AuthErrorLogger {
       type: 'success'
     };
 
-    // Log to console in development
+    
     if (process.env.NODE_ENV === 'development') {
       console.log(`[AUTH_SUCCESS] ${action}:`, successLog);
     }
 
-    // Send to analytics service
+    
     this.sendToAnalytics(successLog);
   }
 
-  /**
-   * Get error statistics for monitoring dashboard
-   */
+  
   getErrorStats(): { total: number; bySeverity: Record<string, number>; byAction: Record<string, number> } {
     const stats = {
       total: this.errorQueue.length,
@@ -99,19 +93,19 @@ class AuthErrorLogger {
   private addToQueue(errorLog: ErrorLog): void {
     this.errorQueue.push(errorLog);
     
-    // Keep queue size manageable
+    
     if (this.errorQueue.length > this.maxQueueSize) {
       this.errorQueue.shift();
     }
   }
 
   private sanitizeErrorMessage(message: string): string {
-    // Remove sensitive information from error messages
+   
     return message
-      .replace(/\b[\w\.-]+@[\w\.-]+\.\w+\b/g, '[EMAIL]') // Remove emails
-      .replace(/\b\d{4,}\b/g, '[NUMBER]') // Remove long numbers
-      .replace(/password/gi, '[PASSWORD]') // Remove password references
-      .substring(0, 500); // Limit length
+      .replace(/\b[\w\.-]+@[\w\.-]+\.\w+\b/g, '[EMAIL]') 
+      .replace(/\b\d{4,}\b/g, '[NUMBER]') 
+      .replace(/password/gi, '[PASSWORD]') 
+      .substring(0, 500);
   }
 
   private sanitizeMetadata(metadata?: Record<string, any>): Record<string, any> {
@@ -119,7 +113,7 @@ class AuthErrorLogger {
     
     const sanitized = { ...metadata };
     
-    // Remove sensitive fields
+  
     delete sanitized.password;
     delete sanitized.token;
     delete sanitized.credential;
@@ -128,28 +122,18 @@ class AuthErrorLogger {
   }
 
   private sendToLoggingService(errorLog: ErrorLog): void {
-    // In production, implement your logging service integration
-    // Examples: Sentry, LogRocket, DataDog, CloudWatch, etc.
+    
     
     if (process.env.NODE_ENV === 'production') {
-      // Example implementation:
-      // Sentry.captureException(new Error(errorLog.errorMessage), {
-      //   tags: { action: errorLog.action, severity: errorLog.severity },
-      //   extra: errorLog
-      // });
+     
     }
   }
 
   private sendToAnalytics(successLog: any): void {
-    // In production, implement your analytics service integration
-    // Examples: Google Analytics, Mixpanel, Amplitude, etc.
+   
     
     if (process.env.NODE_ENV === 'production') {
-      // Example implementation:
-      // gtag('event', successLog.action, {
-      //   event_category: 'authentication',
-      //   event_label: successLog.metadata?.provider
-      // });
+    
     }
   }
 }
@@ -164,33 +148,29 @@ export const AuthMonitoring = {
       console.log(`[AUTH_PERFORMANCE] ${flowName}: ${duration}ms - ${success ? 'SUCCESS' : 'FAILED'}`);
     }
 
-    // In production, send to performance monitoring
+   
     if (typeof window !== 'undefined' && 'performance' in window) {
       performance.mark(`auth-${flowName}-${success ? 'success' : 'error'}`);
     }
   },
 
-  /**
-   * Track user engagement metrics
-   */
+  
   trackUserEngagement: (action: string, userId?: string) => {
     if (process.env.NODE_ENV === 'development') {
       console.log(`[USER_ENGAGEMENT] ${action} - User: ${userId || 'anonymous'}`);
     }
 
-    // In production, send to analytics
+    
   },
 
-  /**
-   * Monitor database operation performance
-   */
+  
   trackDatabaseOperation: (operation: string, success: boolean, duration: number) => {
     if (process.env.NODE_ENV === 'development') {
       console.log(`[DB_OPERATION] ${operation}: ${duration}ms - ${success ? 'SUCCESS' : 'FAILED'}`);
     }
 
-    // Track slow operations
-    if (duration > 5000) { // 5 seconds
+   
+    if (duration > 5000) { 
       authErrorLogger.logAuthError(
         `slow-database-operation-${operation}`,
         new Error(`Database operation took ${duration}ms`),

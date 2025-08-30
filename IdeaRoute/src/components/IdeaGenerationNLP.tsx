@@ -5,7 +5,7 @@ import { useIdea } from '@/context/IdeaContext';
 import React, { useEffect, useState } from 'react';
 import styles from './IdeaGenerationNLP.module.css';
 
-// Props interface for the component
+
 interface IdeaGenerationNLPProps {
   onClose: () => void;
 }

@@ -102,7 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           );
         }
       } catch (error) {
-        // Silent error handling for redirect
+       
       }
     };
     
@@ -136,7 +136,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               };
             }
           } catch (error: any) {
-            // Continue with Firebase Auth data only
+            
           }
         }
         
@@ -196,7 +196,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             displayName: sanitizedDisplayName
           });
         } catch (profileError) {
-          // Continue if profile update fails
+          
         }
       }
       
@@ -420,7 +420,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             isOnline: false
           }, { merge: true });
         } catch (error) {
-          // Continue with signout even if status update fails
+          
         }
       }
       
@@ -449,8 +449,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('Please enter a valid email address');
       }
 
-      // Use a different approach - try to get sign-in methods
-      // If this throws an auth/user-not-found error, the user doesn't exist
+     
       try {
         const signInMethods = await fetchSignInMethodsForEmail(auth, sanitizedEmail);
         return signInMethods.length > 0;
@@ -459,7 +458,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (firebaseError.code === 'auth/user-not-found') {
           return false;
         }
-        // For other errors, assume user might exist to avoid enumeration attacks
+    
         return true;
       }
       
@@ -550,35 +549,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw new Error('No user signed in');
     }
 
-    // Get the current Firebase Auth user to ensure we have the full Firebase User object
+    
     const currentUser = auth.currentUser;
     if (!currentUser) {
       throw new Error('No authenticated user found');
     }
 
     try {
-      // If email is being updated, require password for re-authentication
+      
       if (updates.email && updates.email !== currentUser.email) {
         if (!currentPassword) {
           throw new Error('Password required for email update');
         }
         
-        // Re-authenticate user
+        
         const credential = EmailAuthProvider.credential(currentUser.email!, currentPassword);
         await reauthenticateWithCredential(currentUser, credential);
         
-        // Update email
+        
         await updateEmail(currentUser, updates.email);
       }
 
-      // Update display name if provided
+     
       if (updates.displayName !== undefined) {
         await updateProfile(currentUser, {
           displayName: updates.displayName
         });
       }
 
-      // Update Firestore document if available
+      
       if (canUseFirestore()) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const updateData: any = {
@@ -595,8 +594,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await updateDoc(userDocRef, updateData);
       }
 
-      // Update local user state by triggering auth state change
-      // The onAuthStateChanged listener will update the user object
+   
       
     } catch (error: any) {
       console.error('Error updating profile:', error);
@@ -609,27 +607,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw new Error('No user signed in');
     }
 
-    // Get the current Firebase Auth user to ensure we have the full Firebase User object
+   
     const currentUser = auth.currentUser;
     if (!currentUser) {
       throw new Error('No authenticated user found');
     }
 
     try {
-      // Re-authenticate user before deletion
+     
       const credential = EmailAuthProvider.credential(currentUser.email!, currentPassword);
       await reauthenticateWithCredential(currentUser, credential);
 
-      // Delete Firestore document if available
+      
       if (canUseFirestore()) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         await deleteDoc(userDocRef);
       }
 
-      // Delete Firebase Auth user
+     
       await deleteUser(currentUser);
 
-      // Clear local state
+      
       setUser(null);
       
     } catch (error: any) {

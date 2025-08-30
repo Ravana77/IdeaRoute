@@ -47,7 +47,7 @@ export const useAuthForm = ({
       [name]: value
     }));
     
-    // Clear errors for the field being edited
+    
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
