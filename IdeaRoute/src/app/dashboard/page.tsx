@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
 import styles from './Dashboard.module.css';
-import { AIGenerate, TimePlanner, Checklist, IdeaGenerationNLP } from '@/components';
+import { IdeaStorage, TimePlanner, Checklist, IdeaGenerationNLP } from '@/components';
 
 const DashboardPage: React.FC = () => {
   const { user, loading, signOut } = useAuth();
@@ -149,22 +149,10 @@ const DashboardPage: React.FC = () => {
         <div className={styles.actionSection}>
           <h3 className={styles.sectionTitle}>Core Functions</h3>
           <div className={styles.actionGrid}>
-            <button 
-              className={styles.actionCard}
-              onClick={() => setActiveModal('checklist')}
-            >
-              <div className={styles.actionIcon}>✓</div>
-              <div className={styles.actionContent}>
-                <h4 className={styles.actionTitle}>QA Checklist</h4>
-                <p className={styles.actionDescription}>
-                  Start and streamline your project’s QA checklist
-                </p>
-              </div>
-            </button>
 
             <button 
               className={styles.actionCard}
-              onClick={() => setActiveModal('ai-generate')}
+              onClick={() => setActiveModal('IdeaGenerationNLP')}
             >
               <div className={styles.actionIcon}>🤖</div>
               <div className={styles.actionContent}>
@@ -187,6 +175,23 @@ const DashboardPage: React.FC = () => {
                 </p>
               </div>
             </button>
+
+            <button 
+              className={styles.actionCard}
+              onClick={() => setActiveModal('checklist')}
+            >
+              <div className={styles.actionIcon}>✓</div>
+              <div className={styles.actionContent}>
+                <h4 className={styles.actionTitle}>QA Checklist</h4>
+                <p className={styles.actionDescription}>
+                  Start and streamline your project’s QA checklist
+                </p>
+              </div>
+            </button>
+
+            
+
+            
           </div>
         </div>
 
@@ -194,13 +199,13 @@ const DashboardPage: React.FC = () => {
           <h3 className={styles.sectionTitle}>Quick Actions</h3>
           <div className={styles.actionGrid}>
             <button className={styles.actionCard}
-            onClick={() => setActiveModal('IdeaGenerationNLP')}
+            onClick={() => setActiveModal('IdeaStorage')}
             >
               <div className={styles.actionIcon}>➕</div>
               <div className={styles.actionContent}>
-                <h4 className={styles.actionTitle}>Create Suggestion</h4>
+                <h4 className={styles.actionTitle}>Idea Storage</h4>
                 <p className={styles.actionDescription}>
-                  Testing NLP model 
+                  View all your ideas in one place 
                 </p>
               </div>
             </button>
@@ -225,8 +230,8 @@ const DashboardPage: React.FC = () => {
         <Checklist onClose={() => setActiveModal(null)} />
       )}
       
-      {activeModal === 'ai-generate' && (
-        <AIGenerate onClose={() => setActiveModal(null)} />
+      {activeModal === 'IdeaStorage' && (
+        <IdeaStorage onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'time-planner' && (
         <TimePlanner onClose={() => setActiveModal(null)} />

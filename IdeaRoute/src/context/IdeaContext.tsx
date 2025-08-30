@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { Idea, IdeaContextType } from '@/types/idea';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useAuth } from '@/context/AuthContext';
+import { firebaseService } from '@/services/firebaseService';
 
 const IdeaContext = createContext<IdeaContextType | undefined>(undefined);
 
@@ -11,80 +13,81 @@ interface IdeaProviderProps {
 }
 
 export const IdeaProvider: React.FC<IdeaProviderProps> = ({ children }) => {
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [ideas, setIdeas] = useState<Idea[]>([]); // Initialize empty, load on client
+    const [ideas, setIdeas] = useState<Idea[]>([]);
     const { showSuccess, showError, showWarning } = useNotifications();
+    const { user } = useAuth();
 
-
-    // Load ideas from localStorage on mount
-
+    // Load ideas from Firestore when user changes
     useEffect(() => {
-        // Only run on client-side
-        if (typeof window !== 'undefined') {
-            setLoading(true);
-            try {
-                const storedIdeas = localStorage.getItem('project-ideas');
-                if (storedIdeas) {
-                    const parsedIdeas = JSON.parse(storedIdeas);
-                    const ideasWithDates = parsedIdeas.map((idea: any) => ({
-                        ...idea,
-                        createdAt: idea.createdAt ? new Date(idea.createdAt) : new Date(),
-                        updatedAt: idea.updatedAt ? new Date(idea.updatedAt) : new Date(),
-                    }));
-                    setIdeas(ideasWithDates);
-                }
-            } catch (err) {
-                setError('Failed to load ideas from storage');
-                showError('Error', 'Failed to load ideas from storage');
-                console.error('Error loading ideas:', err);
-            } finally {
-                setLoading(false);
-            }
-        }
-    }, []);
+        loadIdeas();
+    }, [user]);
 
-    const saveIdeasToStorage = useCallback(() => {
+    const loadIdeas = useCallback(async () => {
+        if (!user) {
+            setIdeas([]);
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
         try {
-            // Remove existing to ensure clean overwrite
-            if (localStorage.getItem('project-ideas') && ideas.length > 0) {
-                localStorage.removeItem('project-ideas');
-            }
-            localStorage.setItem('project-ideas', JSON.stringify(ideas));
-            showSuccess('Success', 'Project idea saved successfully!');
+            const userIdeas = await firebaseService.getUserIdeas(user.uid);
+            setIdeas(userIdeas);
         } catch (err) {
-            setError('Failed to save project idea to storage');
-            showError('Error', 'Failed to save project idea to storage');
-            console.error('Error saving project idea:', err);
+            console.error('Error loading ideas from Firestore:', err);
+            setError('Failed to load ideas');
+            showError('Error', 'Failed to load ideas from server');
+            setIdeas([]); // Set empty array instead of trying localStorage
+        } finally {
+            setLoading(false);
         }
-    }, [ideas, showError]);
+    }, [user, showError]);
 
-    // Automatically save ideas to localStorage when they change
-    useEffect(() => {
-        saveIdeasToStorage();
-    }, [ideas, saveIdeasToStorage]);
+    const addIdea = useCallback(async (ideaData: Omit<Idea, 'id'>) => {
+        if (!user) {
+            showError('Error', 'You must be logged in to save ideas');
+            return;
+        }
 
-    const addIdea = useCallback((ideaData: Omit<Idea, 'id'>) => {
+        setLoading(true);
         try {
             const newIdea: Idea = {
                 ...ideaData,
-                id: Date.now().toString(), // ensure it has an ID
+                id: '', // Firestore will generate ID
+                user_id: user.uid,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             };
 
-            // Replace the array with only the latest idea
-            setIdeas([newIdea]);
+            // Save to Firestore
+            const firestoreId = await firebaseService.saveIdea(newIdea);
+            
+            // Update with Firestore ID
+            const savedIdea: Idea = {
+                ...newIdea,
+                id: firestoreId
+            };
 
+            setIdeas(prev => [savedIdea, ...prev]);
             showSuccess('Success', 'Idea added successfully!');
         } catch (err) {
+            console.error('Error adding idea:', err);
             setError('Failed to add idea');
-            showError('Error', 'Failed to add idea');
+            showError('Error', 'Failed to save idea');
+        } finally {
+            setLoading(false);
         }
-    }, [showSuccess, showError]);
+    }, [user, showSuccess, showError]);
 
-    const updateIdea = useCallback((id: string, updatedIdea: Partial<Idea>) => {
+    const updateIdea = useCallback(async (id: string, updatedIdea: Partial<Idea>) => {
+        setLoading(true);
         try {
+            // Update in Firestore
+            await firebaseService.updateIdea(id, updatedIdea);
+
+            // Update local state
             setIdeas(prev => prev.map(idea =>
                 idea.id === id
                     ? { ...idea, ...updatedIdea, updatedAt: new Date() }
@@ -93,28 +96,39 @@ export const IdeaProvider: React.FC<IdeaProviderProps> = ({ children }) => {
 
             showSuccess('Success', 'Idea updated successfully!');
         } catch (err) {
+            console.error('Error updating idea:', err);
             setError('Failed to update idea');
             showError('Error', 'Failed to update idea');
+        } finally {
+            setLoading(false);
         }
     }, [showSuccess, showError]);
 
-    const deleteIdea = useCallback((id: string) => {
-        try {
-            const ideaToDelete = ideas.find(idea => idea.id === id);
+    const deleteIdea = useCallback(async (id: string) => {
+        const ideaToDelete = ideas.find(idea => idea.id === id);
 
-            showWarning(
-                'Confirm Deletion',
-                `Are you sure you want to delete "${ideaToDelete?.idea_name}"? This action cannot be undone.`
-            ).then((result) => {
-                if (result.isConfirmed) {
+        showWarning(
+            'Confirm Deletion',
+            `Are you sure you want to delete "${ideaToDelete?.idea_name}"? This action cannot be undone.`
+        ).then(async (result) => {
+            if (result.isConfirmed) {
+                setLoading(true);
+                try {
+                    // Delete from Firestore
+                    await firebaseService.deleteIdea(id);
+
+                    // Update local state
                     setIdeas(prev => prev.filter(idea => idea.id !== id));
                     showSuccess('Success', 'Idea deleted successfully!');
+                } catch (err) {
+                    console.error('Error deleting idea:', err);
+                    setError('Failed to delete idea');
+                    showError('Error', 'Failed to delete idea');
+                } finally {
+                    setLoading(false);
                 }
-            });
-        } catch (err) {
-            setError('Failed to delete idea');
-            showError('Error', 'Failed to delete idea');
-        }
+            }
+        });
     }, [ideas, showWarning, showSuccess, showError]);
 
     const clearError = () => setError(null);

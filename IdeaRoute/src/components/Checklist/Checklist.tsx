@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './Checklist.module.css';
+import { checklistService, ChecklistData } from '@/services/firebaseChecklistService';
+import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/hooks/useNotifications';
 
 type StatusType = 'Pass' | 'Fail' | 'N/A';
 
@@ -153,6 +156,10 @@ const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
   const [newItemSection, setNewItemSection] = useState(defaultSections[0]);
   const [notes, setNotes] = useState('');
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
+  const { showSuccess, showError } = useNotifications();
+  
 
   // Load items from localStorage on component mount
   useEffect(() => {
@@ -179,6 +186,124 @@ const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
     localStorage.setItem('qa-checklist-items', JSON.stringify(items));
     localStorage.setItem('qa-checklist-notes', notes);
   }, [items, notes]);
+
+  useEffect(() => {
+    loadChecklist();
+  }, [user]);
+
+const loadChecklist = async () => {
+    if (!user) return;
+
+    try {
+      const savedChecklist = await checklistService.getChecklist(user.uid);
+      if (savedChecklist) {
+        setItems(savedChecklist.items);
+        setNotes(savedChecklist.notes);
+      } else {
+        // Fallback to localStorage if no Firestore data
+        const savedItems = localStorage.getItem('qa-checklist-items');
+        const savedNotes = localStorage.getItem('qa-checklist-notes');
+        if (savedItems) {
+          try {
+            const parsed = JSON.parse(savedItems);
+            setItems(parsed.map((item: any) => ({
+              ...item,
+              createdAt: new Date(item.createdAt)
+            })));
+          } catch (error) {
+            console.error('Error loading checklist items:', error);
+          }
+        }
+        if (savedNotes) {
+          setNotes(savedNotes);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading checklist:', error);
+      // Fallback to localStorage
+      const savedItems = localStorage.getItem('qa-checklist-items');
+      const savedNotes = localStorage.getItem('qa-checklist-notes');
+      if (savedItems) {
+        try {
+          const parsed = JSON.parse(savedItems);
+          setItems(parsed.map((item: any) => ({
+            ...item,
+            createdAt: new Date(item.createdAt)
+          })));
+        } catch (error) {
+          console.error('Error loading checklist items:', error);
+        }
+      }
+      if (savedNotes) {
+        setNotes(savedNotes);
+      }
+    }
+  };
+
+  const saveChecklistToFirestore = async () => {
+    if (!user) {
+      showError('Error', 'You must be logged in to save checklists');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const checklistData = {
+        items,
+        notes,
+        completedCount,
+        totalCount,
+        passCount,
+        failCount,
+        passRate,
+        lastSaved: new Date()
+      };
+
+      await checklistService.saveChecklist(user.uid, checklistData);
+      showSuccess('Success', 'Checklist saved to cloud!');
+    } catch (error) {
+      console.error('Error saving checklist:', error);
+      showError('Error', 'Failed to save checklist to cloud');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const autoSaveChecklist = async () => {
+    if (!user) return;
+    
+    // Auto-save every 30 seconds when user is active
+    try {
+      const checklistData = {
+        items,
+        notes,
+        completedCount,
+        totalCount,
+        passCount,
+        failCount,
+        passRate,
+        lastSaved: new Date()
+      };
+      
+      await checklistService.saveChecklist(user.uid, checklistData);
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    }
+  };
+
+   useEffect(() => {
+    if (!user) return;
+
+    const autoSaveInterval = setInterval(autoSaveChecklist, 30000);
+    return () => clearInterval(autoSaveInterval);
+  }, [user, items, notes]);
+
+  // Save to localStorage as backup
+  useEffect(() => {
+    localStorage.setItem('qa-checklist-items', JSON.stringify(items));
+    localStorage.setItem('qa-checklist-notes', notes);
+  }, [items, notes]);
+
 
   const addItem = () => {
     if (newItemText.trim()) {
@@ -269,7 +394,10 @@ const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    if (link.parentNode) {
+      link.parentNode.removeChild(link);
+    }
+    URL.revokeObjectURL(url);
   };
 
   const groupedItems = items.reduce((acc, item) => {
@@ -288,9 +416,20 @@ const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
             <span className={styles.icon}>✓</span>
             QA Checklist
           </h2>
-          <button onClick={onClose} className={styles.closeButton}>
-            ✕
-          </button>
+          <div className={styles.headerActions}>
+            {user && (
+              <button 
+                onClick={saveChecklistToFirestore} 
+                className={styles.saveButton}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : 'Save to Cloud'}
+              </button>
+            )}
+            <button onClick={onClose} className={styles.closeButton}>
+              ✕
+            </button>
+          </div>
         </div>
 
         <div className={styles.content}>
@@ -390,16 +529,6 @@ const Checklist: React.FC<ChecklistProps> = ({ onClose }) => {
                 )}
               </div>
             ))}
-          </div>
-
-          <div className={styles.notesSection}>
-            <h3>Notes & Next Steps</h3>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add general observations, suggestions, or next steps..."
-              className={styles.notesInput}
-            />
           </div>
 
           <div className={styles.actions}>

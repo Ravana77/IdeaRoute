@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, enableNetwork } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
 const firebaseConfig = {
@@ -17,24 +17,10 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const googleProvider = new GoogleAuthProvider();
 
-export let isFirestoreAvailable = true;
-
-const testFirestoreConnection = async () => {
-  try {
-    await enableNetwork(db);
-    isFirestoreAvailable = true;
-  } catch (error: unknown) {
-    const errorObj = error as { code?: string; message?: string };
-    if (errorObj.code === 'unavailable' || errorObj.message?.includes('offline')) {
-      isFirestoreAvailable = false;
-    }
-  }
-};
-
-if (typeof window !== 'undefined') {
-  testFirestoreConnection();
-}
+// Remove all connection testing and debug code
+export const canUseFirestore = () => true; // Just assume it works
 
 let analytics: ReturnType<typeof getAnalytics> | null = null;
 if (typeof window !== 'undefined') {
@@ -45,36 +31,5 @@ if (typeof window !== 'undefined') {
   });
 }
 export { analytics };
-
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: 'select_account',
-  access_type: 'online'
-});
-
-googleProvider.addScope('profile');
-googleProvider.addScope('email');
-
-export const canUseFirestore = (): boolean => {
-  return isFirestoreAvailable;
-};
-
-export const showFirestoreSetupInstructions = () => {
-  if (typeof window !== 'undefined' && !isFirestoreAvailable) {
-    console.warn(`
-🔧 SETUP REQUIRED: Enable Firestore Database
-
-Your app is trying to save user data, but Firestore isn't enabled yet.
-
-Quick Fix:
-1. Visit: https://console.firebase.google.com/project/${firebaseConfig.projectId}/firestore
-2. Click "Create database"
-3. Choose "Start in test mode"
-4. Refresh this page
-
-This is a one-time setup step.
-    `);
-  }
-};
 
 export default app;
